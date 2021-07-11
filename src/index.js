@@ -1,13 +1,49 @@
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as yup from 'yup';
+import i18next from 'i18next';
+import { setLocale } from 'yup';
+
+const state = {
+  addedUrls: {},
+  feedsNumber: 0,
+  appStatus: 'idle', // idle, success, error
+};
+
+setLocale({
+  string: {
+    url: 'Ссылка должна быть валидным URL',
+  },
+});
 
 const schema = yup.string().url();
+
+const runApp = () => i18next.init({
+  lng: 'ru', // Текущий язык
+  debug: true,
+  resources: {
+    ru: {
+      translation: {
+        posts: {
+          postsHeader: 'Посты',
+        },
+        feeds: {
+          feedsHeader: 'Фиды',
+        },
+        feedback: {
+          urlWarning: 'Ссылка должна быть валидным URL',
+        },
+      },
+    },
+  },
+});
+runApp();
 
 const addButton = document.querySelector('.btn');
 const textField = document.querySelector('.form-control');
 const feedsBlock = document.querySelector('.feeds');
 const postsBlock = document.querySelector('.posts');
+const errorField = document.querySelector('.feedback');
 
 const listGroupUlFeeds = document.createElement('ul');
 listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
@@ -30,11 +66,11 @@ function createFeedsAndPostsBlock(arg) {
   cardBodyDiv.append(cardTitleHeader);
 
   if (arg === 'feeds') {
-    cardTitleHeader.textContent = 'Фиды';
+    cardTitleHeader.textContent = i18next.t('feeds.feedsHeader');
     feedsBlock.append(cardDiv);
     cardDiv.append(listGroupUlFeeds);
   } else {
-    cardTitleHeader.textContent = 'Посты';
+    cardTitleHeader.textContent = i18next.t('posts.postsHeader');
     postsBlock.append(cardDiv);
     cardDiv.append(listGroupUlPosts);
   }
@@ -83,19 +119,12 @@ function addPosts(items) {
 
 function parsing(stringContainingXMLSource) {
   const parser = new DOMParser();
-  const doc = parser.parseFromString(stringContainingXMLSource, 'application/xml');
-  console.log(doc);
-  return doc;
+  return parser.parseFromString(stringContainingXMLSource, 'application/xml');
 }
-
-const state = {
-  addedUrls: {},
-};
-
-let feedsNumber = 0;
 
 addButton.addEventListener('click', () => {
   textField.classList.remove('border', 'border-2', 'border-danger');
+  errorField.textContent = '';
   const inputURL = textField.value;
   try {
     schema.validateSync(inputURL);
@@ -106,24 +135,30 @@ addButton.addEventListener('click', () => {
       })
       .then((data) => parsing(data.contents))
       .then((doc) => {
-        const items = doc.querySelectorAll('item');
-        const channel = doc.querySelector('channel');
-        const title = channel.querySelector('title');
-        const description = channel.querySelector('description');
-        if (feedsNumber === 0) {
+        // eslint-disable-next-line no-prototype-builtins
+        if (state.addedUrls.hasOwnProperty(inputURL)) {
+          textField.classList.add('border', 'border-3', 'border-danger');
+          throw new Error('url exist');
+        }
+        state.dataItems = doc.querySelectorAll('item');
+        state.dataChannel = doc.querySelector('channel');
+        state.dataTitle = state.dataChannel.querySelector('title');
+        state.dataDescription = state.dataChannel.querySelector('description');
+        if (state.feedsNumber === 0) {
           createFeedsAndPostsBlock('feeds');
           createFeedsAndPostsBlock('posts');
         }
-        addFeeds(title.textContent, description.textContent);
-        addPosts(items);
+        addFeeds(state.dataTitle.textContent, state.dataDescription.textContent);
+        addPosts(state.dataItems);
         state.addedUrls[inputURL] = inputURL;
+        state.feedsNumber += 1;
         console.log(state);
-        feedsNumber += 1;
-        console.log(feedsNumber);
+        console.log(state.feedsNumber);
       });
     textField.value = '';
   } catch (e) {
     textField.classList.add('border', 'border-3', 'border-danger');
+    errorField.textContent = e.errors;
     console.log(e);
   }
 });
