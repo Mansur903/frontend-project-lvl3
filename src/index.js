@@ -11,7 +11,7 @@ const addButton = document.querySelector('.btn');
 
 setLocale({
   string: {
-    url: i18next.t('feedback.error'),
+    url: 'Ссылка должна быть валидным URL',
   },
 });
 
