@@ -2,7 +2,7 @@
   "name": "@hexlet/code",
   "version": "1.0.0",
   "description": "RSS aggregator",
-  "main": "index.js",
+  "main": "",
   "scripts": {
     "dev": "webpack --mode development",
     "build": "webpack --mode production"
@@ -31,6 +31,7 @@
     "@popperjs/core": "^2.9.2",
     "bootstrap": "^5.0.1",
     "i18next": "^20.3.2",
+    "lodash": "^4.17.21",
     "on-change": "^3.0.2",
     "yup": "^0.32.9"
   }

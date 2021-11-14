@@ -8,7 +8,7 @@ const listGroupUlFeeds = document.createElement('ul');
 listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
 
 const listGroupUlPosts = document.createElement('ul');
-listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
+listGroupUlPosts.classList.add('list-group', 'border-0', 'rounded-0');
 
 export const state = {
   addedUrls: {},
@@ -43,11 +43,10 @@ export function setInputFieldStatus(status, errorMessage) {
 }
 
 // -------------------------------------------------------- Генерация блока фидов и постов
-export default function createFeedsAndPostsBlock(arg) {
+export function createFeedsAndPostsBlock(arg) {
   const cardDiv = document.createElement('div');
   const cardBodyDiv = document.createElement('div');
   const cardTitleHeader = document.createElement('h2');
-
   cardDiv.classList.add('card', 'border-0');
   cardBodyDiv.classList.add('card-body');
 
@@ -60,7 +59,8 @@ export default function createFeedsAndPostsBlock(arg) {
     cardTitleHeader.textContent = i18next.t('feeds.feedsHeader');
     feedsBlock.append(cardDiv);
     cardDiv.append(listGroupUlFeeds);
-  } else {
+  }
+  if (arg === 'posts') {
     cardTitleHeader.textContent = i18next.t('posts.postsHeader');
     postsBlock.append(cardDiv);
     cardDiv.append(listGroupUlPosts);
@@ -79,7 +79,6 @@ export function addFeeds(title, description) {
   titleH3.classList.add('h6', 'm-0');
   descriptionP.classList.add('m-0', 'text-black-50');
   listGroupItemLi.classList.add('list-group-item', 'border-0', 'border-end-0');
-
   listGroupUlFeeds.append(listGroupItemLi);
   listGroupItemLi.append(titleH3);
   listGroupItemLi.append(descriptionP);
@@ -108,3 +107,27 @@ export function addPosts(items) {
     listGroupUlPosts.append(listGroupItemLi);
   });
 }
+
+export const watchedState = onChange(state, (path, value, previousValue) => {
+  console.log('path: ', path);
+  switch (path) {
+    case 'appStatus':
+      setInputFieldStatus(value);
+      break;
+    case 'feedsNumber':
+      if (state.feedsNumber === 1) {
+        createFeedsAndPostsBlock('feeds');
+        createFeedsAndPostsBlock('posts');
+      }
+      break;
+    case 'dataTitle': {
+      const title = state.dataTitle.textContent;
+      const description = state.dataDescription.textContent;
+      const { dataItems } = state;
+      addFeeds(title, description);
+      addPosts(dataItems);
+      break;
+    }
+    default:
+  }
+});
