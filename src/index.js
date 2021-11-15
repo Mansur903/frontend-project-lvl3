@@ -4,7 +4,7 @@ import * as yup from 'yup';
 import _ from 'lodash';
 import i18next from 'i18next';
 import { setLocale } from 'yup';
-import { state, textField, watchedState } from './view.js';
+import { textField, watchedState } from './view.js';
 
 const addButton = document.querySelector('.btn');
 
@@ -30,7 +30,9 @@ const runApp = () => i18next.init({
         },
         feedback: {
           success: 'RSS успешно загружен',
-          error: 'Ссылка должна быть валидным URL',
+          errorUrlNotValid: 'Ссылка должна быть валидным URL',
+          errorUrlExist: 'Данный url уже существует',
+          errorRssNotFound: 'По данной ссылке RSS канал не найден',
         },
       },
     },
@@ -49,15 +51,24 @@ function parsing(stringContainingXMLSource) {
 addButton.addEventListener('click', () => {
   watchedState.appStatus = 'idle';
   const inputURL = textField.value;
-  schema.validateSync(inputURL);
+  try {
+    schema.validateSync(inputURL);
+  } catch (e) {
+    watchedState.appStatus = 'error';
+    watchedState.errorMessage = i18next.t('feedback.errorUrlNotValid');
+    throw new Error(i18next.t('feedback.errorUrlNotValid'));
+  }
+
   if (Object.values(watchedState.addedUrls).includes(inputURL)) {
     watchedState.appStatus = 'error';
-    throw new Error('url exist');
+    watchedState.errorMessage = i18next.t('feedback.errorUrlExist');
+    throw new Error(i18next.t('feedback.errorUrlExist'));
   } else {
     watchedState.addedUrls[_.uniqueId()] = inputURL;
   }
+
   try {
-    fetch(`https://hexlet-allorigins.herokuapp.com/get?url=${encodeURIComponent(`${inputURL}`)}`)
+    fetch(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(`${inputURL}`)}`)
       .then((response) => {
         if (response.ok) return response.json();
         throw new Error('Network response was not ok.');
@@ -66,14 +77,18 @@ addButton.addEventListener('click', () => {
       .then((doc) => {
         watchedState.dataItems = doc.querySelectorAll('item');
         const dataChannel = doc.querySelector('channel');
-        console.log('dataChannel: ', dataChannel);
+        if (dataChannel === null) {
+          watchedState.appStatus = 'error';
+          watchedState.errorMessage = i18next.t('feedback.errorRssNotFound');
+          throw new Error(i18next.t('feedback.errorRssNotFound'));
+        }
         watchedState.dataDescription = dataChannel.querySelector('description');
         watchedState.dataTitle = dataChannel.querySelector('title');
         watchedState.feedsNumber += 1;
+        watchedState.appStatus = 'success';
       });
-    watchedState.appStatus = 'success';
   } catch (e) {
-    // setInputFieldStatus('error', e.errors);
+    watchedState.appStatus = 'error';
+    watchedState.errorMessage = e.errors;
   }
-  console.log('state: ', state);
 });

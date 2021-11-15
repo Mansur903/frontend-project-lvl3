@@ -108,11 +108,11 @@ export function addPosts(items) {
   });
 }
 
-export const watchedState = onChange(state, (path, value, previousValue) => {
+export const watchedState = onChange(state, (path, value) => {
   console.log('path: ', path);
   switch (path) {
     case 'appStatus':
-      setInputFieldStatus(value);
+      setInputFieldStatus(value, state.errorMessage);
       break;
     case 'feedsNumber':
       if (state.feedsNumber === 1) {
@@ -128,6 +128,10 @@ export const watchedState = onChange(state, (path, value, previousValue) => {
       addPosts(dataItems);
       break;
     }
+    case 'errorMessage':
+      setInputFieldStatus('error', state.errorMessage);
+      break;
     default:
   }
+  console.log(state);
 });
