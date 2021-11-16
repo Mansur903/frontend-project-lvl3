@@ -4,7 +4,7 @@ import * as yup from 'yup';
 import _ from 'lodash';
 import i18next from 'i18next';
 import { setLocale } from 'yup';
-import { textField, watchedState } from './view.js';
+import { state, textField, watchedState } from './view.js';
 
 const addButton = document.querySelector('.btn');
 
@@ -75,17 +75,24 @@ addButton.addEventListener('click', () => {
       })
       .then((data) => parsing(data.contents))
       .then((doc) => {
-        watchedState.dataItems = doc.querySelectorAll('item');
+        const dataPosts = Array.from(doc.querySelectorAll('item'));
+        watchedState.posts = [...state.posts, ...dataPosts];
         const dataChannel = doc.querySelector('channel');
         if (dataChannel === null) {
           watchedState.appStatus = 'error';
           watchedState.errorMessage = i18next.t('feedback.errorRssNotFound');
           throw new Error(i18next.t('feedback.errorRssNotFound'));
         }
+        const feed = {
+          title: dataChannel.querySelector('title'),
+          description: dataChannel.querySelector('description'),
+        };
         watchedState.dataDescription = dataChannel.querySelector('description');
         watchedState.dataTitle = dataChannel.querySelector('title');
+        watchedState.feeds = [...state.feeds, feed];
         watchedState.feedsNumber += 1;
         watchedState.appStatus = 'success';
+        console.log(state);
       });
   } catch (e) {
     watchedState.appStatus = 'error';

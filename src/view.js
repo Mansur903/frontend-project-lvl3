@@ -14,6 +14,8 @@ export const state = {
   addedUrls: {},
   feedsNumber: 0,
   appStatus: 'idle', // idle, success, error
+  posts: [],
+  feeds: [],
 };
 
 export const textField = document.querySelector('.form-control');
@@ -68,7 +70,7 @@ export function createFeedsAndPostsBlock(arg) {
 }
 
 // -------------------------------------------------------- Добавление фидов
-export function addFeeds(title, description) {
+export function addFeeds({ title, description }) {
   const listGroupItemLi = document.createElement('li');
   const titleH3 = document.createElement('h3');
   const descriptionP = document.createElement('p');
@@ -86,6 +88,7 @@ export function addFeeds(title, description) {
 
 // -------------------------------------------------------- Добавление постов
 export function addPosts(items) {
+  listGroupUlPosts.innerHTML = '';
   items.forEach((item) => {
     const itemTitle = item.querySelector('title');
     const postUrl = item.querySelector('link');
@@ -123,9 +126,10 @@ export const watchedState = onChange(state, (path, value) => {
     case 'dataTitle': {
       const title = state.dataTitle.textContent;
       const description = state.dataDescription.textContent;
-      const { dataItems } = state;
-      addFeeds(title, description);
-      addPosts(dataItems);
+      const feed = { title, description };
+      const { posts } = state;
+      addFeeds(feed);
+      addPosts(posts);
       break;
     }
     case 'errorMessage':
