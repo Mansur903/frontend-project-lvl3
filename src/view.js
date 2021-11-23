@@ -4,7 +4,7 @@ import onChange from 'on-change';
 const feedsBlock = document.querySelector('.feeds');
 const postsBlock = document.querySelector('.posts');
 
-const listGroupUlFeeds = document.createElement('ul');
+export const listGroupUlFeeds = document.createElement('ul');
 listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
 
 const listGroupUlPosts = document.createElement('ul');
@@ -81,17 +81,17 @@ export function addFeeds({ title, description }) {
   titleH3.classList.add('h6', 'm-0');
   descriptionP.classList.add('m-0', 'text-black-50');
   listGroupItemLi.classList.add('list-group-item', 'border-0', 'border-end-0');
-  listGroupUlFeeds.append(listGroupItemLi);
   listGroupItemLi.append(titleH3);
   listGroupItemLi.append(descriptionP);
+  listGroupUlFeeds.append(listGroupItemLi);
 }
 
 // -------------------------------------------------------- Добавление постов
 export function addPosts(items) {
   listGroupUlPosts.innerHTML = '';
   items.forEach((item) => {
-    const itemTitle = item.querySelector('title');
-    const postUrl = item.querySelector('link');
+    const itemTitle = item.data.querySelector('title');
+    const postUrl = item.data.querySelector('link');
     const listGroupItemLi = document.createElement('li');
     const aElem = document.createElement('a');
     const itemButton = document.createElement('button');
@@ -112,7 +112,6 @@ export function addPosts(items) {
 }
 
 export const watchedState = onChange(state, (path, value) => {
-  console.log('path: ', path);
   switch (path) {
     case 'appStatus':
       setInputFieldStatus(value, state.errorMessage);
@@ -127,8 +126,11 @@ export const watchedState = onChange(state, (path, value) => {
       const title = state.dataTitle.textContent;
       const description = state.dataDescription.textContent;
       const feed = { title, description };
-      const { posts } = state;
       addFeeds(feed);
+      break;
+    }
+    case 'posts': {
+      const { posts } = state;
       addPosts(posts);
       break;
     }
@@ -137,5 +139,4 @@ export const watchedState = onChange(state, (path, value) => {
       break;
     default:
   }
-  console.log(state);
 });
