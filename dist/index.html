@@ -3,8 +3,25 @@
   <head>
     <meta charset="utf-8">
     <title>Webpack App</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1"><script src="../src/index.js"></script><!-- <script defer src="bundle.js"></script> --><script defer src="bundle.js"></script></head>
+  <meta name="viewport" content="width=device-width, initial-scale=1"><script src="../src/index.js"></script><script defer src="bundle.js"></script></head>
   <body>
+    <div class="modal fade" tabindex="-1" id="rssModal">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Modal title</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p class="modal-description">Modal body text goes here.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <section class="container-fluid bg-dark p-5">
       <div class="row">
         <div class="col-md-auto col-lg-8 mx-auto text-white">
@@ -16,7 +33,7 @@
                 <input id="url-input" placeholder = "ссылка RSS" autofocus required autocomplete="off" type = "text" name="url" class = "form-control form-control-lg w-100">
               </div>
               <div class="col-auto">
-                <button type = "submit" class="btn btn-lg btn-primary px-sm-5">Add</button>
+                <button type = "submit" class="btn btn-lg btn-primary px-sm-5 add">Add</button>
               </div>
             </div>
           </form>

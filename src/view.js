@@ -89,18 +89,22 @@ export function addFeeds({ title, description }) {
 // -------------------------------------------------------- Добавление постов
 export function addPosts(items) {
   listGroupUlPosts.innerHTML = '';
-  items.forEach((item) => {
-    const itemTitle = item.data.querySelector('title');
-    const postUrl = item.data.querySelector('link');
+  items.forEach(({ data, id }) => {
+    const itemTitle = data.querySelector('title');
+    const postUrl = data.querySelector('link');
     const listGroupItemLi = document.createElement('li');
     const aElem = document.createElement('a');
     const itemButton = document.createElement('button');
 
     listGroupItemLi.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+    listGroupItemLi.setAttribute('id', `${id}`);
     aElem.classList.add('fw-bold');
-    itemButton.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+    itemButton.classList.add('btn', 'btn-outline-primary', 'btn-sm', 'preview');
 
     itemButton.setAttribute('type', 'button');
+    itemButton.setAttribute('id', `${id}`);
+    itemButton.setAttribute('data-bs-toggle', 'modal');
+    itemButton.setAttribute('data-bs-target', '#rssModal');
     aElem.setAttribute('href', postUrl.textContent);
 
     itemButton.textContent = 'Просмотр';

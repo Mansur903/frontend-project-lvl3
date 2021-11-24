@@ -6,7 +6,7 @@ import i18next from 'i18next';
 import { setLocale } from 'yup';
 import { state, textField, watchedState } from './view.js';
 
-const addButton = document.querySelector('.btn');
+const addButton = document.querySelector('.add');
 
 setLocale({
   string: {
@@ -17,7 +17,7 @@ setLocale({
 const schema = yup.string().url().required();
 
 const runApp = () => i18next.init({
-  lng: 'ru', // Текущий язык
+  lng: 'ru',
   debug: true,
   resources: {
     ru: {
@@ -46,7 +46,10 @@ function parsing(stringContainingXMLSource) {
   const parser = new DOMParser();
   return parser.parseFromString(stringContainingXMLSource, 'application/xml');
 }
+
 let counterFeeds = 0;
+let counterPosts = 0;
+
 // -------------------------------------------------------- Контроллер
 function makeRequest(url) {
   try {
@@ -59,7 +62,8 @@ function makeRequest(url) {
       .then((doc) => {
         const dataPosts = Array.from(doc.querySelectorAll('item')).map((item) => {
           const newItem = item;
-          return ({ data: newItem });
+          counterPosts += 1;
+          return ({ data: newItem, id: counterPosts });
         });
         watchedState.posts = [...state.posts, ...dataPosts];
         const dataChannel = doc.querySelector('channel');
@@ -87,6 +91,23 @@ function makeRequest(url) {
   }
 }
 
+function preview(previewButton) {
+  previewButton.forEach((item) => {
+    item.addEventListener('click', () => {
+      const modalTitle = document.querySelector('.modal-title');
+      const modalDescription = document.querySelector('.modal-description');
+      modalTitle.textContent = item.closest('.list-group-item').firstChild.textContent;
+      console.log(item.id);
+      const { id } = item;
+      const description = state.posts.filter((post) => post.id === Number(id))[0]
+        .data
+        .querySelector('description')
+        .textContent;
+      modalDescription.textContent = description;
+    });
+  });
+}
+
 function checkNewPosts() {
   const urls = Object.values(state.addedUrls);
   urls.forEach((url) => {
@@ -110,13 +131,20 @@ function checkNewPosts() {
           return newDataPosts;
         })
         .then((newDataPosts) => {
-          const newPosts = newDataPosts.map((item) => ({ data: item }));
+          const newPosts = newDataPosts.map((item) => {
+            counterPosts += 1;
+            return ({ data: item, id: counterPosts });
+          });
           watchedState.posts = [...newPosts, ...state.posts];
         })
         .then(() => {
+          const previewButton = document.querySelectorAll('.preview');
+          preview(previewButton);
+          // console.log('state: ', state);
+        })
+        .then(() => {
           if (url === urls[urls.length - 1]) {
-            console.log(url);
-            setTimeout(checkNewPosts, 5000);
+            // setTimeout(checkNewPosts, 5000);
           }
         });
     } catch (e) {
