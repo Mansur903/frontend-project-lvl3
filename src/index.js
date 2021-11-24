@@ -144,7 +144,7 @@ function checkNewPosts() {
         })
         .then(() => {
           if (url === urls[urls.length - 1]) {
-            // setTimeout(checkNewPosts, 5000);
+            setTimeout(checkNewPosts, 5000);
           }
         });
     } catch (e) {
