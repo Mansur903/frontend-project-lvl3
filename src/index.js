@@ -50,6 +50,24 @@ function parsing(stringContainingXMLSource) {
 let counterFeeds = 0;
 let counterPosts = 0;
 
+function preview(previewButton) {
+  previewButton.forEach((item) => {
+    item.addEventListener('click', () => {
+      const modalTitle = document.querySelector('.modal-title');
+      const modalDescription = document.querySelector('.modal-description');
+      const readAllButton = document.querySelector('.read-all');
+      readAllButton.setAttribute('href', `${item.closest('.list-group-item').firstChild.href}`);
+      modalTitle.textContent = item.closest('.list-group-item').firstChild.textContent;
+      console.log(item.closest('.list-group-item').firstChild.href);
+      const { id } = item;
+      const description = state.posts.filter((post) => post.id === Number(id))[0]
+        .data
+        .querySelector('description')
+        .textContent;
+      modalDescription.textContent = description;
+    });
+  });
+}
 // -------------------------------------------------------- Контроллер
 function makeRequest(url) {
   try {
@@ -84,28 +102,15 @@ function makeRequest(url) {
         watchedState.feeds = [...state.feeds, feed];
         watchedState.feedsNumber += 1;
         watchedState.appStatus = 'success';
+      })
+      .then(() => {
+        const previewButton = document.querySelectorAll('.preview');
+        preview(previewButton);
       });
   } catch (e) {
     watchedState.appStatus = 'error';
     watchedState.errorMessage = e.errors;
   }
-}
-
-function preview(previewButton) {
-  previewButton.forEach((item) => {
-    item.addEventListener('click', () => {
-      const modalTitle = document.querySelector('.modal-title');
-      const modalDescription = document.querySelector('.modal-description');
-      modalTitle.textContent = item.closest('.list-group-item').firstChild.textContent;
-      console.log(item.id);
-      const { id } = item;
-      const description = state.posts.filter((post) => post.id === Number(id))[0]
-        .data
-        .querySelector('description')
-        .textContent;
-      modalDescription.textContent = description;
-    });
-  });
 }
 
 function checkNewPosts() {
