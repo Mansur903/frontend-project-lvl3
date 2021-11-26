@@ -31,8 +31,9 @@ const runApp = () => i18next.init({
         feedback: {
           success: 'RSS успешно загружен',
           errorUrlNotValid: 'Ссылка должна быть валидным URL',
-          errorUrlExist: 'Данный url уже существует',
-          errorRssNotFound: 'По данной ссылке RSS канал не найден',
+          errorUrlExist: 'RSS уже существует',
+          errorRssNotFound: 'Ресурс не содержит валидный RSS',
+          errorNetwork: 'Ошибка сети',
         },
       },
     },
@@ -108,10 +109,14 @@ function makeRequest(url) {
       .then(() => {
         const previewButton = document.querySelectorAll('.preview');
         preview(previewButton);
+      })
+      .then(() => {
+        console.log('state: ', state);
+        console.log('watchedState: ', watchedState.posts);
       });
   } catch (e) {
     watchedState.appStatus = 'error';
-    watchedState.errorMessage = e.errors;
+    watchedState.errorMessage = i18next.t('feedback.errorNetwork');
   }
 }
 
@@ -161,7 +166,7 @@ function checkNewPosts() {
         });
     } catch (e) {
       watchedState.appStatus = 'error';
-      watchedState.errorMessage = e.errors;
+      watchedState.errorMessage = i18next.t('feedback.errorNetwork');
     }
   });
 }

@@ -116,7 +116,6 @@ export function addPosts(items) {
 }
 
 export const watchedState = onChange(state, (path, value) => {
-  console.log('path: ', path);
   switch (path) {
     case 'appStatus':
       setInputFieldStatus(value, state.errorMessage);
