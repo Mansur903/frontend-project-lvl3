@@ -58,13 +58,15 @@ function preview(previewButton) {
       const readAllButton = document.querySelector('.read-all');
       readAllButton.setAttribute('href', `${item.closest('.list-group-item').firstChild.href}`);
       modalTitle.textContent = item.closest('.list-group-item').firstChild.textContent;
-      console.log(item.closest('.list-group-item').firstChild.href);
       const { id } = item;
+      watchedState.posts[id - 1].status = 'read';
       const description = state.posts.filter((post) => post.id === Number(id))[0]
         .data
         .querySelector('description')
         .textContent;
       modalDescription.textContent = description;
+      document.getElementById(item.id).firstChild.classList.remove('fw-bold');
+      document.getElementById(item.id).firstChild.classList.add('fw-normal');
     });
   });
 }
@@ -81,7 +83,7 @@ function makeRequest(url) {
         const dataPosts = Array.from(doc.querySelectorAll('item')).map((item) => {
           const newItem = item;
           counterPosts += 1;
-          return ({ data: newItem, id: counterPosts });
+          return ({ data: newItem, id: counterPosts, status: 'unread' });
         });
         watchedState.posts = [...state.posts, ...dataPosts];
         const dataChannel = doc.querySelector('channel');
@@ -138,14 +140,19 @@ function checkNewPosts() {
         .then((newDataPosts) => {
           const newPosts = newDataPosts.map((item) => {
             counterPosts += 1;
-            return ({ data: item, id: counterPosts });
+            return ({ data: item, id: counterPosts, status: 'unread' });
           });
           watchedState.posts = [...newPosts, ...state.posts];
+          state.posts.forEach((post) => {
+            if (post.status === 'read') {
+              document.getElementById(post.id).firstChild.classList.remove('fw-bold');
+              document.getElementById(post.id).firstChild.classList.add('fw-normal');
+            }
+          });
         })
         .then(() => {
           const previewButton = document.querySelectorAll('.preview');
           preview(previewButton);
-          // console.log('state: ', state);
         })
         .then(() => {
           if (url === urls[urls.length - 1]) {
