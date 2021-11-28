@@ -174,7 +174,13 @@ function main() {
     const inputURL = textField.value;
     textField.value = '';
     try {
-      schema.validateSync(inputURL);
+      schema.isValid(inputURL)
+        .then(() => {
+          makeRequest(inputURL);
+          if (Object.values(state.addedUrls).length === 1) {
+            checkNewPosts();
+          }
+        });
     } catch {
       watchedState.appStatus = 'error';
       watchedState.errorMessage = i18next.t('feedback.errorUrlNotValid');
@@ -186,10 +192,6 @@ function main() {
       throw new Error(i18next.t('feedback.errorUrlExist'));
     } else {
       watchedState.addedUrls[_.uniqueId()] = inputURL;
-    }
-    makeRequest(inputURL);
-    if (Object.values(state.addedUrls).length === 1) {
-      checkNewPosts();
     }
   });
 }
