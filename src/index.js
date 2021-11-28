@@ -3,16 +3,15 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import * as yup from 'yup';
 import _ from 'lodash';
 import i18next from 'i18next';
-import { setLocale } from 'yup';
+// import { setLocale } from 'yup';
 import { state, textField, watchedState } from './view.js';
 
-setLocale({
+/* setLocale({
   string: {
     url: 'Ссылка должна быть валидным URL',
   },
 });
-
-const schema = yup.string().url().required();
+ */
 
 const runApp = () => i18next.init({
   lng: 'ru',
@@ -38,7 +37,12 @@ const runApp = () => i18next.init({
   },
 })
   .then(() => {
+    const schema = yup.string().url().required();
+    return schema;
+  })
+  .then((schema) => {
     const addButton = document.querySelector('.add');
+
     function parsing(stringContainingXMLSource) {
       const parser = new DOMParser();
       return parser.parseFromString(stringContainingXMLSource, 'application/xml');
@@ -162,13 +166,14 @@ const runApp = () => i18next.init({
         watchedState.errorMessage = i18next.t('feedback.errorNetwork');
       }
     }
+
     addButton.addEventListener('click', (e) => {
       e.preventDefault();
       watchedState.appStatus = 'idle';
       const inputURL = textField.value;
       textField.value = '';
       try {
-        schema.isValid(inputURL)
+        schema.validate(inputURL)
           .then(() => {
             makeRequest(inputURL);
             if (Object.values(state.addedUrls).length === 1) {
@@ -190,6 +195,3 @@ const runApp = () => i18next.init({
     });
   });
 runApp();
-
-// --------------------------------------------------------
-// -------------------------------------------------------- Контроллер
