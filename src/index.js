@@ -7,7 +7,6 @@ import { setLocale } from 'yup';
 import { state, textField, watchedState } from './view.js';
 
 const addButton = document.querySelector('.add');
-
 setLocale({
   string: {
     url: 'Ссылка должна быть валидным URL',
@@ -109,10 +108,6 @@ function makeRequest(url) {
       .then(() => {
         const previewButton = document.querySelectorAll('.preview');
         preview(previewButton);
-      })
-      .then(() => {
-        console.log('state: ', state);
-        console.log('watchedState: ', watchedState.posts);
       });
   } catch (e) {
     watchedState.appStatus = 'error';
