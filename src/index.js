@@ -40,7 +40,7 @@ runApp();
 
 export default function main() {
   const schema = yup.string().url().required();
-  const addButton = document.querySelector('.add');
+  // const addButton = document.querySelector('.add');
 
   function parsing(stringContainingXMLSource) {
     const parser = new DOMParser();
@@ -166,7 +166,7 @@ export default function main() {
     }
   }
 
-  addButton.addEventListener('click', (e) => {
+  document.querySelector('.add').addEventListener('click', (e) => {
     e.preventDefault();
     watchedState.appStatus = 'idle';
     const inputURL = textField.value;
