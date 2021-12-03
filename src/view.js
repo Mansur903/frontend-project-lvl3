@@ -18,6 +18,10 @@ export const state = {
   feeds: [],
 };
 
+export const modalTitle = document.querySelector('.modal-title');
+export const modalDescription = document.querySelector('.modal-description');
+export const readAllButton = document.querySelector('.read-all');
+
 export const textField = document.querySelector('.form-control');
 
 export function setInputFieldStatus(status, errorMessage) {
@@ -26,6 +30,7 @@ export function setInputFieldStatus(status, errorMessage) {
     case 'idle':
       textField.classList.remove('border', 'border-2', 'border-danger');
       errorField.textContent = '';
+      console.log('idle');
       break;
     case 'success':
       textField.classList.remove('border', 'border-2', 'border-danger');
@@ -33,12 +38,14 @@ export function setInputFieldStatus(status, errorMessage) {
       errorField.classList.remove('text-danger');
       errorField.classList.add('text-success');
       errorField.textContent = i18next.t('feedback.success');
+      console.log('success');
       break;
     case 'error':
       errorField.classList.remove('text-success');
       errorField.classList.add('text-danger');
       textField.classList.add('border', 'border-3', 'border-danger');
       errorField.textContent = errorMessage;
+      console.log('error');
       break;
     default:
   }
