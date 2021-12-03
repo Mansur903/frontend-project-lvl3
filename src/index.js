@@ -9,7 +9,7 @@ import getData from './utils/getData.js';
 import parsing from './utils/parsing.js';
 import ru from './locales/ru.js';
 
-const runApp = () => {
+const runApp = async () => {
   i18next.init({
     lng: 'ru',
     debug: true,
@@ -142,3 +142,4 @@ const runApp = () => {
 };
 
 runApp();
+export default runApp;
