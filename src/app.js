@@ -94,6 +94,7 @@ export default async () => {
                 }
               });
           } catch (e) {
+            console.log(e);
             watchedState.appStatus = 'error';
             watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
           }
@@ -135,6 +136,7 @@ export default async () => {
               preview(previewButton);
             });
         } catch (e) {
+          console.log(e);
           watchedState.appStatus = 'error';
           watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
         }
@@ -151,7 +153,8 @@ export default async () => {
           throw new Error(i18nextInstance.t('feedback.errorUrlExist'));
         } else {
           schema.validate(inputURL)
-            .catch(() => {
+            .catch((err) => {
+              console.log(err);
               watchedState.appStatus = 'error';
               watchedState.errorMessage = i18nextInstance.t('feedback.errorUrlNotValid');
               throw new Error(i18nextInstance.t('feedback.errorUrlNotValid'));
