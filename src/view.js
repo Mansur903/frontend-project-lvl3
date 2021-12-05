@@ -1,4 +1,3 @@
-import i18next from 'i18next';
 import onChange from 'on-change';
 
 const feedsBlock = document.querySelector('.feeds');
@@ -10,49 +9,38 @@ listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
 const listGroupUlPosts = document.createElement('ul');
 listGroupUlPosts.classList.add('list-group', 'border-0', 'rounded-0');
 
-export const state = {
-  addedUrls: {},
-  feedsNumber: 0,
-  appStatus: 'idle', // idle, success, error
-  posts: [],
-  feeds: [],
-};
-
 export const modalTitle = document.querySelector('.modal-title');
 export const modalDescription = document.querySelector('.modal-description');
 export const readAllButton = document.querySelector('.read-all');
 
 export const textField = document.querySelector('.form-control');
 
-export function setInputFieldStatus(status, errorMessage) {
+export function setInputFieldStatus(status, errorMessage, i18nextInstance) {
   const errorField = document.querySelector('.feedback');
   switch (status) {
     case 'idle':
       textField.classList.remove('border', 'border-2', 'border-danger');
       errorField.textContent = '';
-      console.log('idle');
       break;
     case 'success':
       textField.classList.remove('border', 'border-2', 'border-danger');
       textField.value = '';
       errorField.classList.remove('text-danger');
       errorField.classList.add('text-success');
-      errorField.textContent = i18next.t('feedback.success');
-      console.log('success');
+      errorField.textContent = i18nextInstance.t('feedback.success');
       break;
     case 'error':
       errorField.classList.remove('text-success');
       errorField.classList.add('text-danger');
       textField.classList.add('border', 'border-3', 'border-danger');
       errorField.textContent = errorMessage;
-      console.log('error');
       break;
     default:
   }
 }
 
 // -------------------------------------------------------- Генерация блока фидов и постов
-export function createFeedsAndPostsBlock(arg) {
+export function createFeedsAndPostsBlock(arg, i18nextInstance) {
   const cardDiv = document.createElement('div');
   const cardBodyDiv = document.createElement('div');
   const cardTitleHeader = document.createElement('h2');
@@ -65,12 +53,12 @@ export function createFeedsAndPostsBlock(arg) {
   cardBodyDiv.append(cardTitleHeader);
 
   if (arg === 'feeds') {
-    cardTitleHeader.textContent = i18next.t('feeds.feedsHeader');
+    cardTitleHeader.textContent = i18nextInstance.t('feeds.feedsHeader');
     feedsBlock.append(cardDiv);
     cardDiv.append(listGroupUlFeeds);
   }
   if (arg === 'posts') {
-    cardTitleHeader.textContent = i18next.t('posts.postsHeader');
+    cardTitleHeader.textContent = i18nextInstance.t('posts.postsHeader');
     postsBlock.append(cardDiv);
     cardDiv.append(listGroupUlPosts);
   }
@@ -122,15 +110,15 @@ export function addPosts(items) {
   });
 }
 
-export const watchedState = onChange(state, (path, value) => {
+const initWatchedState = (i18nextInstance, state) => onChange(state, (path, value) => {
   switch (path) {
     case 'appStatus':
-      setInputFieldStatus(value, state.errorMessage);
+      setInputFieldStatus(value, state.errorMessage, i18nextInstance);
       break;
     case 'feedsNumber':
       if (state.feedsNumber === 1) {
-        createFeedsAndPostsBlock('feeds');
-        createFeedsAndPostsBlock('posts');
+        createFeedsAndPostsBlock('feeds', i18nextInstance);
+        createFeedsAndPostsBlock('posts', i18nextInstance);
       }
       break;
     case 'dataTitle': {
@@ -146,8 +134,10 @@ export const watchedState = onChange(state, (path, value) => {
       break;
     }
     case 'errorMessage':
-      setInputFieldStatus('error', state.errorMessage);
+      setInputFieldStatus('error', state.errorMessage, i18nextInstance);
       break;
     default:
   }
 });
+
+export default initWatchedState;
