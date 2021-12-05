@@ -31,7 +31,9 @@ export default async () => {
 
     window.addEventListener('DOMContentLoaded', () => {
       const schema = yup.string().url().required();
-      const addButton = document.querySelector('.add');
+      // const addButton = document.querySelector('.add');
+      const form = document.querySelector('form');
+      console.log('form: ', form);
 
       let counterFeeds = 0;
       let counterPosts = 0;
@@ -143,7 +145,7 @@ export default async () => {
         }
       }
 
-      addButton.addEventListener('click', (e) => {
+      form.addEventListener('submit', (e) => {
         e.preventDefault();
         watchedState.appStatus = 'submitting';
         const inputURL = textField.value;
