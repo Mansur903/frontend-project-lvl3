@@ -19,6 +19,7 @@ export function setInputFieldStatus(status, errorMessage, i18nextInstance) {
   const errorField = document.querySelector('.feedback');
   switch (status) {
     case 'idle':
+      document.querySelector('.add').disabled = true;
       textField.classList.remove('border', 'border-2', 'border-danger');
       errorField.textContent = '';
       break;
