@@ -19,11 +19,16 @@ export function setInputFieldStatus(status, errorMessage, i18nextInstance) {
   const errorField = document.querySelector('.feedback');
   switch (status) {
     case 'idle':
+      textField.classList.remove('border', 'border-2', 'border-danger');
+      errorField.textContent = '';
+      break;
+    case 'submitting':
       document.querySelector('.add').disabled = true;
       textField.classList.remove('border', 'border-2', 'border-danger');
       errorField.textContent = '';
       break;
     case 'success':
+      document.querySelector('.add').disabled = false;
       textField.classList.remove('border', 'border-2', 'border-danger');
       textField.value = '';
       errorField.classList.remove('text-danger');
@@ -31,6 +36,7 @@ export function setInputFieldStatus(status, errorMessage, i18nextInstance) {
       errorField.textContent = i18nextInstance.t('feedback.success');
       break;
     case 'error':
+      document.querySelector('.add').disabled = false;
       errorField.classList.remove('text-success');
       errorField.classList.add('text-danger');
       textField.classList.add('border', 'border-3', 'border-danger');

@@ -26,6 +26,7 @@ export default async () => {
       posts: [],
       feeds: [],
     };
+    console.log(state);
     const watchedState = initWatchedState(i18nextInstance, state);
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -144,7 +145,7 @@ export default async () => {
 
       addButton.addEventListener('click', (e) => {
         e.preventDefault();
-        watchedState.appStatus = 'idle';
+        watchedState.appStatus = 'submitting';
         const inputURL = textField.value;
         textField.value = '';
         if (Object.values(watchedState.addedUrls).includes(inputURL)) {
