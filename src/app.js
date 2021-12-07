@@ -4,7 +4,7 @@ import * as yup from 'yup';
 import _ from 'lodash';
 import i18next from 'i18next';
 import initWatchedState, {
-  textField, modalTitle, modalDescription, readAllButton,
+  modalTitle, modalDescription, readAllButton,
 } from './view.js';
 import getData from './utils/getData.js';
 import parsing from './utils/parsing.js';
@@ -27,11 +27,9 @@ export default async () => {
       feeds: [],
     };
     const watchedState = initWatchedState(i18nextInstance, state);
-
     const schema = yup.string().url().required();
     const form = document.querySelector('form');
-    console.log('form: ', form);
-    console.log('!!!');
+    const textField = document.querySelector('.form-control');
 
     let counterFeeds = 0;
     let counterPosts = 0;

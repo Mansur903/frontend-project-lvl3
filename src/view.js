@@ -3,7 +3,7 @@ import onChange from 'on-change';
 const feedsBlock = document.querySelector('.feeds');
 const postsBlock = document.querySelector('.posts');
 
-export const listGroupUlFeeds = document.createElement('ul');
+const listGroupUlFeeds = document.createElement('ul');
 listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
 
 const listGroupUlPosts = document.createElement('ul');
@@ -13,11 +13,9 @@ export const modalTitle = document.querySelector('.modal-title');
 export const modalDescription = document.querySelector('.modal-description');
 export const readAllButton = document.querySelector('.read-all');
 
-export const textField = document.querySelector('.form-control');
-console.log('textField: ', textField);
-
-export function setInputFieldStatus(status, errorMessage, i18nextInstance) {
+function setInputFieldStatus(status, errorMessage, i18nextInstance) {
   const errorField = document.querySelector('.feedback');
+  const textField = document.querySelector('.form-control');
   switch (status) {
     case 'idle':
       textField.classList.remove('border', 'border-2', 'border-danger');
@@ -48,7 +46,7 @@ export function setInputFieldStatus(status, errorMessage, i18nextInstance) {
 }
 
 // -------------------------------------------------------- Генерация блока фидов и постов
-export function createFeedsAndPostsBlock(arg, i18nextInstance) {
+function createFeedsAndPostsBlock(arg, i18nextInstance) {
   const cardDiv = document.createElement('div');
   const cardBodyDiv = document.createElement('div');
   const cardTitleHeader = document.createElement('h2');
@@ -73,7 +71,7 @@ export function createFeedsAndPostsBlock(arg, i18nextInstance) {
 }
 
 // -------------------------------------------------------- Добавление фидов
-export function addFeeds({ title, description }) {
+function addFeeds({ title, description }) {
   const listGroupItemLi = document.createElement('li');
   const titleH3 = document.createElement('h3');
   const descriptionP = document.createElement('p');
@@ -90,7 +88,7 @@ export function addFeeds({ title, description }) {
 }
 
 // -------------------------------------------------------- Добавление постов
-export function addPosts(items) {
+function addPosts(items) {
   listGroupUlPosts.innerHTML = '';
   items.forEach(({ data, id }) => {
     const itemTitle = data.querySelector('title');
