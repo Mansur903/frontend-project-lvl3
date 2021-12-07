@@ -1,3 +1,5 @@
+import fetch from 'node-fetch';
+
 function getData(url) {
   return fetch(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(`${url}`)}`)
     .then((response) => {
