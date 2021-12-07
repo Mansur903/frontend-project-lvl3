@@ -100,47 +100,43 @@ export default async () => {
     }
 
     function makeRequest(url) {
-      try {
-        getData(url)
-          .catch(() => {
-            watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
-          })
-          .then((data) => parsing(data.contents))
-          .then((doc) => {
-            const dataPosts = Array.from(doc.querySelectorAll('item')).map((item) => {
-              const newItem = item;
-              counterPosts += 1;
-              return ({ data: newItem, id: counterPosts, status: 'unread' });
-            });
-            watchedState.posts = [...state.posts, ...dataPosts];
-            const dataChannel = doc.querySelector('channel');
-            if (dataChannel === null) {
-              watchedState.appStatus = 'error';
-              watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
-              watchedState.addedUrls = _.remove(state.addedUrls, (item) => item === url);
-              throw new Error(i18next.t('feedback.errorRssNotFound'));
-            }
-            const feed = {
-              title: dataChannel.querySelector('title'),
-              description: dataChannel.querySelector('description'),
-              id: counterFeeds,
-            };
-            counterFeeds += 1;
-            watchedState.dataDescription = dataChannel.querySelector('description');
-            watchedState.dataTitle = dataChannel.querySelector('title');
-            watchedState.feeds = [...state.feeds, feed];
-            watchedState.feedsNumber += 1;
-            watchedState.appStatus = 'success';
-          })
-          .then(() => {
-            const previewButton = document.querySelectorAll('.preview');
-            preview(previewButton);
+      getData(url)
+        .catch((e) => {
+          console.log('network error: ', e);
+          watchedState.appStatus = 'error';
+          watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
+        })
+        .then((data) => parsing(data.contents))
+        .then((doc) => {
+          const dataPosts = Array.from(doc.querySelectorAll('item')).map((item) => {
+            const newItem = item;
+            counterPosts += 1;
+            return ({ data: newItem, id: counterPosts, status: 'unread' });
           });
-      } catch (e) {
-        console.log('network error: ', e);
-        watchedState.appStatus = 'error';
-        watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
-      }
+          watchedState.posts = [...state.posts, ...dataPosts];
+          const dataChannel = doc.querySelector('channel');
+          if (dataChannel === null) {
+            watchedState.appStatus = 'error';
+            watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
+            watchedState.addedUrls = _.remove(state.addedUrls, (item) => item === url);
+            throw new Error(i18next.t('feedback.errorRssNotFound'));
+          }
+          const feed = {
+            title: dataChannel.querySelector('title'),
+            description: dataChannel.querySelector('description'),
+            id: counterFeeds,
+          };
+          counterFeeds += 1;
+          watchedState.dataDescription = dataChannel.querySelector('description');
+          watchedState.dataTitle = dataChannel.querySelector('title');
+          watchedState.feeds = [...state.feeds, feed];
+          watchedState.feedsNumber += 1;
+          watchedState.appStatus = 'success';
+        })
+        .then(() => {
+          const previewButton = document.querySelectorAll('.preview');
+          preview(previewButton);
+        });
     }
 
     form.addEventListener('submit', (e) => {
