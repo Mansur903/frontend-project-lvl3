@@ -30,6 +30,7 @@ export default async () => {
 
     const schema = yup.string().url().required();
     const form = document.querySelector('form');
+    console.log('form: ', form);
     console.log('!!!');
 
     let counterFeeds = 0;

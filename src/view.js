@@ -14,6 +14,7 @@ export const modalDescription = document.querySelector('.modal-description');
 export const readAllButton = document.querySelector('.read-all');
 
 export const textField = document.querySelector('.form-control');
+console.log('textField: ', textField);
 
 export function setInputFieldStatus(status, errorMessage, i18nextInstance) {
   const errorField = document.querySelector('.feedback');
