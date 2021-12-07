@@ -2,11 +2,12 @@ import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as yup from 'yup';
 import _ from 'lodash';
+import axios from 'axios';
 import i18next from 'i18next';
 import initWatchedState, {
   modalTitle, modalDescription, readAllButton,
 } from './view.js';
-import getData from './utils/getData.js';
+// import getData from './utils/getData.js';
 import parsing from './utils/parsing.js';
 import ru from './locales/ru.js';
 
@@ -55,52 +56,55 @@ export default async () => {
     function checkNewPosts() {
       const urls = Object.values(state.addedUrls);
       urls.forEach((url) => {
-        try {
-          getData(url)
-            .then((data) => parsing(data.contents))
-            .then((doc) => {
-              const newDataPosts = Array.from(doc.querySelectorAll('item')).filter((item) => {
-                let isNewPost = true;
-                state.posts.forEach((post) => {
-                  if (post.data.textContent === item.textContent) {
-                    isNewPost = false;
-                  }
-                });
-                return isNewPost;
-              });
-              return newDataPosts;
-            })
-            .then((newDataPosts) => {
-              const newPosts = newDataPosts.map((item) => {
-                counterPosts += 1;
-                return ({ data: item, id: counterPosts, status: 'unread' });
-              });
-              watchedState.posts = [...newPosts, ...state.posts];
+        axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(`${url}`)}`)
+          .then((response) => {
+            if (response.status === 200) return response.data;
+            throw new Error('Network response was not ok.');
+          })
+          .then((data) => parsing(data.contents))
+          .then((doc) => {
+            const newDataPosts = Array.from(doc.querySelectorAll('item')).filter((item) => {
+              let isNewPost = true;
               state.posts.forEach((post) => {
-                if (post.status === 'read') {
-                  document.getElementById(post.id).firstChild.classList.remove('fw-bold');
-                  document.getElementById(post.id).firstChild.classList.add('fw-normal');
+                if (post.data.textContent === item.textContent) {
+                  isNewPost = false;
                 }
               });
-            })
-            .then(() => {
-              const previewButton = document.querySelectorAll('.preview');
-              preview(previewButton);
-            })
-            .then(() => {
-              if (url === urls[urls.length - 1]) {
-                setTimeout(checkNewPosts, 5000);
+              return isNewPost;
+            });
+            return newDataPosts;
+          })
+          .then((newDataPosts) => {
+            const newPosts = newDataPosts.map((item) => {
+              counterPosts += 1;
+              return ({ data: item, id: counterPosts, status: 'unread' });
+            });
+            watchedState.posts = [...newPosts, ...state.posts];
+            state.posts.forEach((post) => {
+              if (post.status === 'read') {
+                document.getElementById(post.id).firstChild.classList.remove('fw-bold');
+                document.getElementById(post.id).firstChild.classList.add('fw-normal');
               }
             });
-        } catch (e) {
-          watchedState.appStatus = 'error';
-          watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
-        }
+          })
+          .then(() => {
+            const previewButton = document.querySelectorAll('.preview');
+            preview(previewButton);
+          })
+          .then(() => {
+            if (url === urls[urls.length - 1]) {
+              setTimeout(checkNewPosts, 5000);
+            }
+          });
       });
     }
 
     function makeRequest(url) {
-      getData(url)
+      axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(`${url}`)}`)
+        .then((response) => {
+          if (response.status === 200) return response.data;
+          throw new Error('Network response was not ok.');
+        })
         .catch((e) => {
           console.log('network error: ', e);
           watchedState.appStatus = 'error';
