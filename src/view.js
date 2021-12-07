@@ -14,10 +14,12 @@ function setInputFieldStatus(status, errorMessage, i18nextInstance) {
       break;
     case 'submitting':
       document.querySelector('.add').disabled = true;
+      textField.readonly = true;
       textField.classList.remove('border', 'border-2', 'border-danger');
       errorField.textContent = '';
       break;
     case 'success':
+      textField.readonly = false;
       document.querySelector('.add').disabled = false;
       textField.classList.remove('border', 'border-2', 'border-danger');
       textField.value = '';
@@ -26,6 +28,7 @@ function setInputFieldStatus(status, errorMessage, i18nextInstance) {
       errorField.textContent = i18nextInstance.t('feedback.success');
       break;
     case 'error':
+      textField.readonly = false;
       document.querySelector('.add').disabled = false;
       errorField.classList.remove('text-success');
       errorField.classList.add('text-danger');
