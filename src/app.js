@@ -134,6 +134,7 @@ export default async () => {
             preview(previewButton);
           });
       } catch (e) {
+        console.log('network error: ', e);
         watchedState.appStatus = 'error';
         watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
       }
