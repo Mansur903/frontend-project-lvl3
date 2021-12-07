@@ -148,13 +148,11 @@ export default async () => {
       if (Object.values(watchedState.addedUrls).includes(inputURL)) {
         watchedState.appStatus = 'error';
         watchedState.errorMessage = i18nextInstance.t('feedback.errorUrlExist');
-        // throw new Error(i18nextInstance.t('feedback.errorUrlExist'));
       } else {
         schema.validate(inputURL)
           .catch(() => {
             watchedState.appStatus = 'error';
             watchedState.errorMessage = i18nextInstance.t('feedback.errorUrlNotValid');
-            throw new Error(i18nextInstance.t('feedback.errorUrlNotValid'));
           })
           .then(() => {
             watchedState.addedUrls[_.uniqueId()] = inputURL;
