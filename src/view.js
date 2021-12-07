@@ -1,14 +1,5 @@
 import onChange from 'on-change';
 
-const feedsBlock = document.querySelector('.feeds');
-const postsBlock = document.querySelector('.posts');
-
-const listGroupUlFeeds = document.createElement('ul');
-listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
-
-const listGroupUlPosts = document.createElement('ul');
-listGroupUlPosts.classList.add('list-group', 'border-0', 'rounded-0');
-
 export const modalTitle = document.querySelector('.modal-title');
 export const modalDescription = document.querySelector('.modal-description');
 export const readAllButton = document.querySelector('.read-all');
@@ -47,6 +38,13 @@ function setInputFieldStatus(status, errorMessage, i18nextInstance) {
 
 // -------------------------------------------------------- Генерация блока фидов и постов
 function createFeedsAndPostsBlock(arg, i18nextInstance) {
+  const listGroupUlFeeds = document.createElement('ul');
+  listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
+  const listGroupUlPosts = document.createElement('ul');
+  listGroupUlPosts.classList.add('list-group', 'border-0', 'rounded-0');
+
+  const feedsBlock = document.querySelector('.feeds');
+  const postsBlock = document.querySelector('.posts');
   const cardDiv = document.createElement('div');
   const cardBodyDiv = document.createElement('div');
   const cardTitleHeader = document.createElement('h2');
@@ -72,6 +70,9 @@ function createFeedsAndPostsBlock(arg, i18nextInstance) {
 
 // -------------------------------------------------------- Добавление фидов
 function addFeeds({ title, description }) {
+  const listGroupUlFeeds = document.createElement('ul');
+  listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
+
   const listGroupItemLi = document.createElement('li');
   const titleH3 = document.createElement('h3');
   const descriptionP = document.createElement('p');
@@ -89,6 +90,9 @@ function addFeeds({ title, description }) {
 
 // -------------------------------------------------------- Добавление постов
 function addPosts(items) {
+  const listGroupUlPosts = document.createElement('ul');
+  listGroupUlPosts.classList.add('list-group', 'border-0', 'rounded-0');
+
   listGroupUlPosts.innerHTML = '';
   items.forEach(({ data, id }) => {
     const itemTitle = data.querySelector('title');
