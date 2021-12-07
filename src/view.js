@@ -4,6 +4,11 @@ export const modalTitle = document.querySelector('.modal-title');
 export const modalDescription = document.querySelector('.modal-description');
 export const readAllButton = document.querySelector('.read-all');
 
+const listGroupUlFeeds = document.createElement('ul');
+listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
+const listGroupUlPosts = document.createElement('ul');
+listGroupUlPosts.classList.add('list-group', 'border-0', 'rounded-0');
+
 function setInputFieldStatus(status, errorMessage, i18nextInstance) {
   const errorField = document.querySelector('.feedback');
   const textField = document.querySelector('.form-control');
@@ -14,12 +19,10 @@ function setInputFieldStatus(status, errorMessage, i18nextInstance) {
       break;
     case 'submitting':
       document.querySelector('.add').disabled = true;
-      textField.setAttribute('readonly', true);
       textField.classList.remove('border', 'border-2', 'border-danger');
       errorField.textContent = '';
       break;
     case 'success':
-      textField.setAttribute('readonly', false);
       document.querySelector('.add').disabled = false;
       textField.classList.remove('border', 'border-2', 'border-danger');
       textField.value = '';
@@ -28,7 +31,6 @@ function setInputFieldStatus(status, errorMessage, i18nextInstance) {
       errorField.textContent = i18nextInstance.t('feedback.success');
       break;
     case 'error':
-      textField.setAttribute('readonly', false);
       document.querySelector('.add').disabled = false;
       errorField.classList.remove('text-success');
       errorField.classList.add('text-danger');
@@ -41,11 +43,6 @@ function setInputFieldStatus(status, errorMessage, i18nextInstance) {
 
 // -------------------------------------------------------- Генерация блока фидов и постов
 function createFeedsAndPostsBlock(arg, i18nextInstance) {
-  const listGroupUlFeeds = document.createElement('ul');
-  listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
-  const listGroupUlPosts = document.createElement('ul');
-  listGroupUlPosts.classList.add('list-group', 'border-0', 'rounded-0');
-
   const feedsBlock = document.querySelector('.feeds');
   const postsBlock = document.querySelector('.posts');
   const cardDiv = document.createElement('div');
@@ -73,9 +70,6 @@ function createFeedsAndPostsBlock(arg, i18nextInstance) {
 
 // -------------------------------------------------------- Добавление фидов
 function addFeeds({ title, description }) {
-  const listGroupUlFeeds = document.createElement('ul');
-  listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
-
   const listGroupItemLi = document.createElement('li');
   const titleH3 = document.createElement('h3');
   const descriptionP = document.createElement('p');
@@ -93,9 +87,6 @@ function addFeeds({ title, description }) {
 
 // -------------------------------------------------------- Добавление постов
 function addPosts(items) {
-  const listGroupUlPosts = document.createElement('ul');
-  listGroupUlPosts.classList.add('list-group', 'border-0', 'rounded-0');
-
   listGroupUlPosts.innerHTML = '';
   items.forEach(({ data, id }) => {
     const itemTitle = data.querySelector('title');

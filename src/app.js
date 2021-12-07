@@ -112,6 +112,7 @@ export default async () => {
         })
         .then((data) => parsing(data.contents))
         .then((doc) => {
+          console.log('doc: ', doc);
           const dataPosts = Array.from(doc.querySelectorAll('item')).map((item) => {
             const newItem = item;
             counterPosts += 1;
@@ -136,6 +137,7 @@ export default async () => {
           watchedState.feeds = [...state.feeds, feed];
           watchedState.feedsNumber += 1;
           watchedState.appStatus = 'success';
+          console.log('state: ', state);
         })
         .then(() => {
           const previewButton = document.querySelectorAll('.preview');
