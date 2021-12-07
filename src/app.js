@@ -2,6 +2,7 @@ import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as yup from 'yup';
 import _ from 'lodash';
+import fetch from 'node-fetch';
 import i18next from 'i18next';
 import initWatchedState, {
   modalTitle, modalDescription, readAllButton,
@@ -56,7 +57,7 @@ export default async () => {
       const urls = Object.values(state.addedUrls);
       urls.forEach((url) => {
         try {
-          getData(url)
+          getData(fetch, url)
             .then((data) => parsing(data.contents))
             .then((doc) => {
               const newDataPosts = Array.from(doc.querySelectorAll('item')).filter((item) => {
@@ -101,7 +102,7 @@ export default async () => {
 
     function makeRequest(url) {
       try {
-        getData(url)
+        getData(fetch, url)
           .then((data) => parsing(data.contents))
           .then((doc) => {
             const dataPosts = Array.from(doc.querySelectorAll('item')).map((item) => {
