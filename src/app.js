@@ -102,6 +102,9 @@ export default async () => {
     function makeRequest(url) {
       try {
         getData(url)
+          .catch(() => {
+            watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
+          })
           .then((data) => parsing(data.contents))
           .then((doc) => {
             const dataPosts = Array.from(doc.querySelectorAll('item')).map((item) => {
