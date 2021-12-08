@@ -7,7 +7,6 @@ import i18next from 'i18next';
 import initWatchedState, {
   modalTitle, modalDescription, readAllButton,
 } from './view.js';
-// import getData from './utils/getData.js';
 import parsing from './utils/parsing.js';
 import ru from './locales/ru.js';
 
@@ -61,7 +60,14 @@ export default async () => {
             if (response.status === 200) return response.data;
             throw new Error('Network response was not ok.');
           })
-          .then((data) => parsing(data.contents))
+          .catch(() => {
+            watchedState.appStatus = 'error';
+            watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
+          })
+          .then((data) => {
+            console.log(data);
+            parsing(data.contents);
+          })
           .then((doc) => {
             const newDataPosts = Array.from(doc.querySelectorAll('item')).filter((item) => {
               let isNewPost = true;
@@ -120,6 +126,7 @@ export default async () => {
           });
           watchedState.posts = [...state.posts, ...dataPosts];
           const dataChannel = doc.querySelector('channel');
+          console.log('dataChannel: ', dataChannel);
           if (dataChannel === null) {
             watchedState.appStatus = 'error';
             watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');

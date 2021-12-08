@@ -17,6 +17,7 @@ function setInputFieldStatus(status, errorMessage, i18nextInstance) {
       textField.classList.remove('border', 'border-2', 'border-danger');
       errorField.textContent = '';
       textField.removeAttribute('readonly');
+      document.querySelector('.add').disabled = false;
       break;
     case 'submitting':
       textField.setAttribute('readonly', true);
