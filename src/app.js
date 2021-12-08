@@ -124,7 +124,6 @@ export default async () => {
             watchedState.appStatus = 'error';
             watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
             watchedState.addedUrls = _.remove(state.addedUrls, (item) => item === url);
-            throw new Error(i18next.t('feedback.errorRssNotFound'));
           }
           const feed = {
             title: dataChannel.querySelector('title'),
