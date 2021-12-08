@@ -65,7 +65,6 @@ export default async () => {
             watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
           })
           .then((data) => {
-            console.log(data);
             parsing(data.contents);
           })
           .then((doc) => {
@@ -111,14 +110,12 @@ export default async () => {
           if (response.status === 200) return response.data;
           throw new Error('Network response was not ok.');
         })
-        .catch((e) => {
-          console.log('network error: ', e);
+        .catch(() => {
           watchedState.appStatus = 'error';
           watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
         })
         .then((data) => parsing(data.contents))
         .then((doc) => {
-          console.log('doc: ', doc);
           const dataPosts = Array.from(doc.querySelectorAll('item')).map((item) => {
             const newItem = item;
             counterPosts += 1;
@@ -126,7 +123,6 @@ export default async () => {
           });
           watchedState.posts = [...state.posts, ...dataPosts];
           const dataChannel = doc.querySelector('channel');
-          console.log('dataChannel: ', dataChannel);
           if (dataChannel === null) {
             watchedState.appStatus = 'error';
             watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
@@ -143,7 +139,6 @@ export default async () => {
           watchedState.feeds = [...state.feeds, feed];
           watchedState.feedsNumber += 1;
           watchedState.appStatus = 'success';
-          console.log('state: ', state);
         })
         .then(() => {
           const previewButton = document.querySelectorAll('.preview');
