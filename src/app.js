@@ -64,10 +64,9 @@ export default async () => {
             watchedState.appStatus = 'error';
             watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
           })
-          .then((data) => {
-            parsing(data.contents);
-          })
+          .then((data) => parsing(data.contents))
           .then((doc) => {
+            console.log('doc: ', doc);
             const newDataPosts = Array.from(doc.querySelectorAll('item')).filter((item) => {
               let isNewPost = true;
               state.posts.forEach((post) => {
