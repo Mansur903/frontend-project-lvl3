@@ -60,10 +60,6 @@ export default async () => {
             if (response.status === 200) return response.data;
             throw new Error('Network response was not ok.');
           })
-          .catch(() => {
-            watchedState.appStatus = 'error';
-            watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
-          })
           .then((data) => parsing(data.contents))
           .then((doc) => {
             const newDataPosts = Array.from(doc.querySelectorAll('item')).filter((item) => {
@@ -98,6 +94,10 @@ export default async () => {
             if (url === urls[urls.length - 1]) {
               setTimeout(checkNewPosts, 5000);
             }
+          })
+          .catch(() => {
+            watchedState.appStatus = 'error';
+            watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
           });
       });
     }
