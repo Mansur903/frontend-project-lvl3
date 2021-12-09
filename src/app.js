@@ -108,10 +108,6 @@ export default async () => {
           if (response.status === 200) return response.data;
           throw new Error('Network response was not ok.');
         })
-        .catch(() => {
-          watchedState.appStatus = 'error';
-          watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
-        })
         .then((data) => parsing(data.contents))
         .then((doc) => {
           const dataPosts = Array.from(doc.querySelectorAll('item')).map((item) => {
@@ -141,6 +137,10 @@ export default async () => {
         .then(() => {
           const previewButton = document.querySelectorAll('.preview');
           preview(previewButton);
+        })
+        .catch(() => {
+          watchedState.appStatus = 'error';
+          watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
         });
     }
 
@@ -154,16 +154,16 @@ export default async () => {
         watchedState.errorMessage = i18nextInstance.t('feedback.errorUrlExist');
       } else {
         schema.validate(inputURL)
-          .catch(() => {
-            watchedState.appStatus = 'error';
-            watchedState.errorMessage = i18nextInstance.t('feedback.errorUrlNotValid');
-          })
           .then(() => {
             watchedState.addedUrls[_.uniqueId()] = inputURL;
             makeRequest(inputURL);
             if (Object.values(state.addedUrls).length === 1) {
               checkNewPosts();
             }
+          })
+          .catch(() => {
+            watchedState.appStatus = 'error';
+            watchedState.errorMessage = i18nextInstance.t('feedback.errorUrlNotValid');
           });
       }
     });
