@@ -63,11 +63,6 @@ export default async () => {
           .catch(() => {
             watchedState.appStatus = 'error';
             watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
-            Object.keys(state.addedUrls).forEach((item) => {
-              if (state.addedUrls[item] === url) {
-                delete state.addedUrls[item];
-              }
-            });
           })
           .then((data) => parsing(data.contents))
           .then((doc) => {
@@ -122,11 +117,6 @@ export default async () => {
         .catch(() => {
           watchedState.appStatus = 'error';
           watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
-          Object.keys(state.addedUrls).forEach((item) => {
-            if (state.addedUrls[item] === url) {
-              delete state.addedUrls[item];
-            }
-          });
         })
         .then((data) => parsing(data.contents))
         .then((doc) => {
