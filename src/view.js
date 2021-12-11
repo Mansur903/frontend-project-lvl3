@@ -2,7 +2,6 @@ import onChange from 'on-change';
 
 export const modalTitle = document.querySelector('.modal-title');
 export const modalDescription = document.querySelector('.modal-description');
-export const readAllButton = document.querySelector('.read-all');
 
 const listGroupUlFeeds = document.createElement('ul');
 listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
@@ -44,16 +43,6 @@ function setInputFieldStatus(status, errorMessage, i18nextInstance) {
       textField.classList.add('border', 'border-3', 'border-danger');
       errorField.textContent = errorMessage;
       break;
-/*     case 'error_network':
-      textField.removeAttribute('readonly');
-      document.querySelector('.add').disabled = false;
-      errorField.classList.remove('text-success');
-      errorField.classList.add('text-danger');
-      textField.classList.add('border', 'border-3', 'border-danger');
-      errorField.textContent = errorMessage;
-      listGroupUlFeeds.innerHTML = '';
-      listGroupUlPosts.innerHTML = '';
-      break; */
     default:
   }
 }

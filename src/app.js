@@ -5,7 +5,7 @@ import _ from 'lodash';
 import axios from 'axios';
 import i18next from 'i18next';
 import initWatchedState, {
-  modalTitle, modalDescription, readAllButton,
+  modalTitle, modalDescription,
 } from './view.js';
 import parsing from './utils/parsing.js';
 import ru from './locales/ru.js';
@@ -35,6 +35,7 @@ export default async () => {
     let counterPosts = 0;
 
     function preview(previewButton) {
+      const readAllButton = document.querySelector('.read-all');
       previewButton.forEach((item) => {
         item.addEventListener('click', () => {
           readAllButton.setAttribute('href', `${item.closest('.list-group-item').firstChild.href}`);
