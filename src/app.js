@@ -4,9 +4,7 @@ import * as yup from 'yup';
 import _ from 'lodash';
 import axios from 'axios';
 import i18next from 'i18next';
-import initWatchedState, {
-  modalTitle, modalDescription,
-} from './view.js';
+import initWatchedState from './view.js';
 import parsing from './utils/parsing.js';
 import ru from './locales/ru.js';
 
@@ -36,6 +34,8 @@ export default async () => {
 
     function preview(previewButton) {
       const readAllButton = document.querySelector('.read-all');
+      const modalTitle = document.querySelector('.modal-title');
+      const modalDescription = document.querySelector('.modal-description');
       previewButton.forEach((item) => {
         item.addEventListener('click', () => {
           readAllButton.setAttribute('href', `${item.closest('.list-group-item').firstChild.href}`);

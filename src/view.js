@@ -1,8 +1,5 @@
 import onChange from 'on-change';
 
-export const modalTitle = document.querySelector('.modal-title');
-export const modalDescription = document.querySelector('.modal-description');
-
 const listGroupUlFeeds = document.createElement('ul');
 listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
 const listGroupUlPosts = document.createElement('ul');
