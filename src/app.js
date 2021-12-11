@@ -60,6 +60,15 @@ export default async () => {
             if (response.status === 200) return response.data;
             throw new Error('Network response was not ok.');
           })
+          .catch(() => {
+            watchedState.appStatus = 'error';
+            watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
+            Object.keys(state.addedUrls).forEach((item) => {
+              if (state.addedUrls[item] === url) {
+                delete state.addedUrls[item];
+              }
+            });
+          })
           .then((data) => parsing(data.contents))
           .then((doc) => {
             const newDataPosts = Array.from(doc.querySelectorAll('item')).filter((item) => {
@@ -105,8 +114,14 @@ export default async () => {
     function makeRequest(url) {
       axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(`${url}`)}`)
         .then((response) => {
-          if (response.status === 200) return response.data;
+          if (response.status === 200) {
+            return response.data;
+          }
           throw new Error('Network response was not ok.');
+        })
+        .catch(() => {
+          watchedState.appStatus = 'error';
+          watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
         })
         .then((data) => parsing(data.contents))
         .then((doc) => {
@@ -118,9 +133,7 @@ export default async () => {
           watchedState.posts = [...state.posts, ...dataPosts];
           const dataChannel = doc.querySelector('channel');
           if (dataChannel === null) {
-            watchedState.appStatus = 'error';
-            watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
-            watchedState.addedUrls = _.remove(state.addedUrls, (item) => item === url);
+            throw new Error('Rss not found');
           }
           const feed = {
             title: dataChannel.querySelector('title'),
@@ -140,7 +153,12 @@ export default async () => {
         })
         .catch(() => {
           watchedState.appStatus = 'error';
-          watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
+          watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
+          Object.keys(state.addedUrls).forEach((item) => {
+            if (state.addedUrls[item] === url) {
+              delete state.addedUrls[item];
+            }
+          });
         });
     }
 
@@ -157,9 +175,12 @@ export default async () => {
           .then(() => {
             watchedState.addedUrls[_.uniqueId()] = inputURL;
             makeRequest(inputURL);
+          })
+          .then(() => {
             if (Object.values(state.addedUrls).length === 1) {
               checkNewPosts();
             }
+            console.log(state);
           })
           .catch(() => {
             watchedState.appStatus = 'error';
