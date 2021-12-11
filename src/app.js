@@ -61,7 +61,7 @@ export default async () => {
             throw new Error('Network response was not ok.');
           })
           .catch(() => {
-            watchedState.appStatus = 'error';
+            watchedState.appStatus = 'error_network';
             watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
           })
           .then((data) => parsing(data.contents))
@@ -115,7 +115,7 @@ export default async () => {
           throw new Error('Network response was not ok.');
         })
         .catch(() => {
-          watchedState.appStatus = 'error';
+          watchedState.appStatus = 'error_network';
           watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
         })
         .then((data) => parsing(data.contents))

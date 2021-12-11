@@ -42,6 +42,16 @@ function setInputFieldStatus(status, errorMessage, i18nextInstance) {
       textField.classList.add('border', 'border-3', 'border-danger');
       errorField.textContent = errorMessage;
       break;
+    case 'error_network':
+      textField.removeAttribute('readonly');
+      document.querySelector('.add').disabled = false;
+      errorField.classList.remove('text-success');
+      errorField.classList.add('text-danger');
+      textField.classList.add('border', 'border-3', 'border-danger');
+      errorField.textContent = errorMessage;
+      listGroupUlFeeds.innerHTML = '';
+      listGroupUlPosts.innerHTML = '';
+      break;
     default:
   }
 }
