@@ -16,8 +16,6 @@ function setInputFieldStatus(status, errorMessage, i18nextInstance) {
       document.querySelector('.add').disabled = false;
       break;
     case 'submitting':
-      listGroupUlFeeds.innerHTML = '';
-      listGroupUlPosts.innerHTML = '';
       textField.setAttribute('readonly', true);
       document.querySelector('.add').disabled = true;
       textField.classList.remove('border', 'border-2', 'border-danger');
