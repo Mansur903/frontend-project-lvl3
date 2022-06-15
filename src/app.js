@@ -56,7 +56,7 @@ export default async () => {
     function checkNewPosts() {
       const urls = Object.values(state.addedUrls);
       urls.forEach((url) => {
-        axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(`${url}`)}`)
+        axios.get(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(`${url}`)}`)
           .then((response) => {
             if (response.status === 200) return response.data;
             throw new Error('Network response was not ok.');
@@ -108,7 +108,7 @@ export default async () => {
     }
 
     function makeRequest(url) {
-      axios.get(`https://hexlet-allorigins.herokuapp.com/get?disableCache=true&url=${encodeURIComponent(`${url}`)}`)
+      axios.get(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(`${url}`)}`)
         .then((response) => {
           if (response.status === 200) {
             return response.data;
