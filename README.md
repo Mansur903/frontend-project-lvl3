@@ -4,4 +4,4 @@
 -------------------------
 ### RSS-агрегатор – сервис для агрегации RSS-потоков, с помощью которых удобно читать разнообразные источники, например, блоги.
 
-Деплой на Vercel: https://frontend-project-lvl3-opal-sigma.vercel.app/
+Демонстрация проекта: https://frontend-project-lvl3-opal-sigma.vercel.app/
