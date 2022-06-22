@@ -1,187 +1,174 @@
-import 'bootstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import * as yup from 'yup';
+import { setLocale } from 'yup';
 import _ from 'lodash';
 import axios from 'axios';
 import i18next from 'i18next';
 import initWatchedState from './view.js';
-import parsing from './utils/parsing.js';
 import ru from './locales/ru.js';
 
-export default async () => {
-  const i18nextInstance = i18next.createInstance();
-  await i18nextInstance.init({
+const i18nextInstance = i18next.createInstance();
+
+const setUrlWithProxy = (url) => `https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${url}`)}`;
+
+const checkNewPostTimeout = 5000;
+
+const STATUS = {
+  idle: 'idle',
+  submitting: 'submitting',
+  success: 'success',
+  error: 'error',
+};
+
+const state = {
+  form: {
+    state: STATUS.idle,
+    errorMessage: '',
+  },
+  feedsNumber: 0,
+  posts: [],
+  feeds: [],
+  openedModalId: null,
+  watchedPosts: [],
+};
+
+const watchedState = initWatchedState(i18nextInstance, state);
+const form = document.querySelector('form');
+const postsBlock = document.querySelector('.posts');
+
+function parse(stringContainingXMLSource) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(stringContainingXMLSource, 'application/xml');
+  return {
+    posts: Array.from(doc.querySelectorAll('item')),
+    channel: doc.querySelector('channel'),
+  };
+}
+
+function rssDownload(url) {
+  axios.get(setUrlWithProxy(url))
+    .then((response) => {
+      if (response.status === 200) {
+        return response.data;
+      }
+      throw new Error('Network response was not ok.');
+    })
+    .then((data) => parse(data.contents))
+    .catch(() => {
+      watchedState.form.state = STATUS.error;
+      watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
+    })
+    .then(({ posts, channel }) => {
+      const dataPosts = posts.map((item) => {
+        const newItem = item;
+        return ({
+          data: newItem, id: _.uniqueId(), status: 'unread', url,
+        });
+      });
+      watchedState.posts = [...dataPosts, ...state.posts];
+      if (channel === null) {
+        throw new Error('Rss not found');
+      }
+      const feed = {
+        title: channel.querySelector('title'),
+        description: channel.querySelector('description'),
+        id: _.uniqueId(),
+      };
+      watchedState.dataDescription = channel.querySelector('description');
+      watchedState.dataTitle = channel.querySelector('title');
+      watchedState.feeds = [...state.feeds, feed];
+      watchedState.feedsNumber += 1;
+      watchedState.form.state = STATUS.success;
+    })
+    .catch(() => {
+      watchedState.form.state = STATUS.error;
+      watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
+    });
+}
+
+function checkNewPosts() {
+  const urls = Array.from(new Set(state.posts.map((item) => item.url)))
+    .filter((item) => item !== undefined);
+  if (urls.length === 0) {
+    setTimeout(checkNewPosts, 5000);
+  } else {
+    urls.forEach((url) => {
+      axios.get(setUrlWithProxy(url))
+        .then((response) => {
+          if (response.status === 200) return response.data;
+          throw new Error('Network response was not ok.');
+        })
+        .catch(() => {
+          watchedState.form.state = STATUS.error;
+          watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
+        })
+        .then((data) => {
+          const { posts } = parse(data.contents);
+          const oldPostsDates = state.posts.map((item) => item.data.querySelector('pubDate').textContent);
+          const newDataPosts = posts.filter((item) => !oldPostsDates.includes(item.querySelector('pubDate').textContent));
+          const newPosts = newDataPosts.map((item) => ({
+            data: item, id: _.uniqueId(), status: 'unread', url,
+          }));
+          watchedState.posts = [...newPosts, ...state.posts];
+        })
+        .catch(() => {
+          watchedState.form.state = STATUS.error;
+          watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
+        })
+        .then(() => {
+          if (url === urls[urls.length - 1]) {
+            setTimeout(checkNewPosts, checkNewPostTimeout);
+          }
+        });
+    });
+  }
+}
+
+checkNewPosts();
+
+export default () => {
+  setLocale({
+    string: {
+      url: 'Ссылка должна быть валидным URL',
+    },
+  });
+
+  i18nextInstance.init({
     lng: 'ru',
     debug: true,
     resources: {
       ru,
     },
   }).then(() => {
-    const state = {
-      addedUrls: {},
-      feedsNumber: 0,
-      appStatus: 'idle', // idle, submitting, success, error
-      posts: [],
-      feeds: [],
-    };
-    const watchedState = initWatchedState(i18nextInstance, state);
-    const schema = yup.string().url().required();
-    const form = document.querySelector('form');
-    const textField = document.querySelector('.form-control');
-
-    let counterFeeds = 0;
-    let counterPosts = 0;
-
-    function preview(previewButton) {
-      const readAllButton = document.querySelector('.read-all');
-      const modalTitle = document.querySelector('.modal-title');
-      const modalDescription = document.querySelector('.modal-description');
-      previewButton.forEach((item) => {
-        item.addEventListener('click', () => {
-          readAllButton.setAttribute('href', `${item.closest('.list-group-item').firstChild.href}`);
-          modalTitle.textContent = item.closest('.list-group-item').firstChild.textContent;
-          const { id } = item;
-          watchedState.posts[id - 1].status = 'read';
-          const description = state.posts.filter((post) => post.id === Number(id))[0]
-            .data
-            .querySelector('description')
-            .textContent;
-          modalDescription.textContent = description;
-          document.getElementById(item.id).firstChild.classList.remove('fw-bold');
-          document.getElementById(item.id).firstChild.classList.add('fw-normal');
-        });
-      });
-    }
-
-    function checkNewPosts() {
-      const urls = Object.values(state.addedUrls);
-      urls.forEach((url) => {
-        axios.get(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(`${url}`)}`)
-          .then((response) => {
-            if (response.status === 200) return response.data;
-            throw new Error('Network response was not ok.');
-          })
-          .catch(() => {
-            watchedState.appStatus = 'error_network';
-            watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
-          })
-          .then((data) => parsing(data.contents))
-          .then((doc) => {
-            const newDataPosts = Array.from(doc.querySelectorAll('item')).filter((item) => {
-              let isNewPost = true;
-              state.posts.forEach((post) => {
-                if (post.data.textContent === item.textContent) {
-                  isNewPost = false;
-                }
-              });
-              return isNewPost;
-            });
-            return newDataPosts;
-          })
-          .then((newDataPosts) => {
-            const newPosts = newDataPosts.map((item) => {
-              counterPosts += 1;
-              return ({ data: item, id: counterPosts, status: 'unread' });
-            });
-            watchedState.posts = [...newPosts, ...state.posts];
-            state.posts.forEach((post) => {
-              if (post.status === 'read') {
-                document.getElementById(post.id).firstChild.classList.remove('fw-bold');
-                document.getElementById(post.id).firstChild.classList.add('fw-normal');
-              }
-            });
-          })
-          .then(() => {
-            const previewButton = document.querySelectorAll('.preview');
-            preview(previewButton);
-          })
-          .then(() => {
-            if (url === urls[urls.length - 1]) {
-              setTimeout(checkNewPosts, 5000);
-            }
-          })
-          .catch(() => {
-            watchedState.appStatus = 'error';
-            watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
-          });
-      });
-    }
-
-    function makeRequest(url) {
-      axios.get(`https://allorigins.hexlet.app/get?url=${encodeURIComponent(`${url}`)}`)
-        .then((response) => {
-          if (response.status === 200) {
-            return response.data;
-          }
-          throw new Error('Network response was not ok.');
-        })
-        .catch(() => {
-          watchedState.appStatus = 'error_network';
-          watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
-        })
-        .then((data) => parsing(data.contents))
-        .then((doc) => {
-          const dataPosts = Array.from(doc.querySelectorAll('item')).map((item) => {
-            const newItem = item;
-            counterPosts += 1;
-            return ({ data: newItem, id: counterPosts, status: 'unread' });
-          });
-          watchedState.posts = [...state.posts, ...dataPosts];
-          const dataChannel = doc.querySelector('channel');
-          if (dataChannel === null) {
-            throw new Error('Rss not found');
-          }
-          const feed = {
-            title: dataChannel.querySelector('title'),
-            description: dataChannel.querySelector('description'),
-            id: counterFeeds,
-          };
-          counterFeeds += 1;
-          watchedState.dataDescription = dataChannel.querySelector('description');
-          watchedState.dataTitle = dataChannel.querySelector('title');
-          watchedState.feeds = [...state.feeds, feed];
-          watchedState.feedsNumber += 1;
-          watchedState.appStatus = 'success';
-        })
-        .then(() => {
-          const previewButton = document.querySelectorAll('.preview');
-          preview(previewButton);
-        })
-        .catch(() => {
-          watchedState.appStatus = 'error';
-          watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
-          Object.keys(state.addedUrls).forEach((item) => {
-            if (state.addedUrls[item] === url) {
-              delete state.addedUrls[item];
-            }
-          });
-        });
-    }
-
     form.addEventListener('submit', (e) => {
+      const addedUrls = Array.from(new Set(state.posts.map((item) => item.url)))
+        .filter((item) => item !== undefined);
       e.preventDefault();
-      watchedState.appStatus = 'submitting';
-      const inputURL = textField.value;
-      textField.value = '';
-      if (Object.values(watchedState.addedUrls).includes(inputURL)) {
-        watchedState.appStatus = 'error';
-        watchedState.errorMessage = i18nextInstance.t('feedback.errorUrlExist');
-      } else {
-        schema.validate(inputURL)
-          .then(() => {
-            watchedState.addedUrls[_.uniqueId()] = inputURL;
-            makeRequest(inputURL);
-          })
-          .then(() => {
-            if (Object.values(state.addedUrls).length === 1) {
-              checkNewPosts();
-            }
-            console.log(state);
-          })
-          .catch(() => {
-            watchedState.appStatus = 'error';
-            watchedState.errorMessage = i18nextInstance.t('feedback.errorUrlNotValid');
-          });
+      watchedState.form.state = STATUS.submitting;
+      const formData = new FormData(form);
+      const url = formData.get('url');
+      const schema = yup.string().url().required().notOneOf(addedUrls, 'RSS уже существует');
+      schema.validate(url)
+        .then(() => {
+          rssDownload(url);
+          formData.set('url', '');
+        })
+        .catch((err) => {
+          watchedState.form.state = STATUS.error;
+          if (err.errors[0] === 'RSS уже существует') {
+            watchedState.errorMessage = i18nextInstance.t('feedback.errorUrlExist');
+          } else {
+            watchedState.errorMessage = i18nextInstance.t(err.errors[0]);
+          }
+        });
+    });
+
+    postsBlock.addEventListener('click', (e) => {
+      const clickId = e.path[0].dataset.id;
+      if (clickId !== undefined) {
+        const index = _.findIndex(state.posts, (post) => post.id === clickId);
+        watchedState.openedModalId = clickId;
+        watchedState.posts[index].status = 'read';
+        watchedState.watchedPosts.push(clickId);
       }
     });
   });

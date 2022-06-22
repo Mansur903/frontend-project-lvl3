@@ -1,8 +1,11 @@
 install:
 	npm install
 
-publish: 
-	npm publish --dry-run
+build:
+	npm run dev
+
+webpack-server:
+	npx webpack serve
 
 lint:
 	npx eslint .

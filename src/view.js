@@ -1,75 +1,71 @@
 import onChange from 'on-change';
+import _ from 'lodash';
 
-const listGroupUlFeeds = document.createElement('ul');
-listGroupUlFeeds.classList.add('list-group', 'border-0', 'rounded-0');
-const listGroupUlPosts = document.createElement('ul');
-listGroupUlPosts.classList.add('list-group', 'border-0', 'rounded-0');
+const listGroupUlPosts = document.querySelector('.ul-posts');
+const listGroupUlFeeds = document.querySelector('.ul-feeds');
+
+const domElements = {
+  feedsBlock: document.querySelector('.feeds'),
+  postsBlock: document.querySelector('.posts'),
+  errorField: document.querySelector('.feedback'),
+  textField: document.querySelector('.form-control'),
+  readAllButton: document.querySelector('.read-all'),
+  modalTitle: document.querySelector('.modal-title'),
+  modalDescription: document.querySelector('.modal-description'),
+};
 
 function setInputFieldStatus(status, errorMessage, i18nextInstance) {
-  const errorField = document.querySelector('.feedback');
-  const textField = document.querySelector('.form-control');
   switch (status) {
     case 'idle':
-      textField.classList.remove('border', 'border-2', 'border-danger');
-      errorField.textContent = '';
-      textField.removeAttribute('readonly');
+      domElements.textField.classList.remove('border', 'border-2', 'border-danger');
+      domElements.errorField.textContent = '';
+      domElements.textField.removeAttribute('readonly');
       document.querySelector('.add').disabled = false;
       break;
     case 'submitting':
-      textField.setAttribute('readonly', true);
+      domElements.textField.setAttribute('readonly', true);
       document.querySelector('.add').disabled = true;
-      textField.classList.remove('border', 'border-2', 'border-danger');
-      errorField.textContent = '';
+      domElements.textField.classList.remove('border', 'border-2', 'border-danger');
+      domElements.errorField.textContent = '';
       break;
     case 'success':
-      textField.removeAttribute('readonly');
+      domElements.textField.removeAttribute('readonly');
       document.querySelector('.add').disabled = false;
-      textField.classList.remove('border', 'border-2', 'border-danger');
-      textField.value = '';
-      errorField.classList.remove('text-danger');
-      errorField.classList.add('text-success');
-      errorField.textContent = i18nextInstance.t('feedback.success');
+      domElements.textField.classList.remove('border', 'border-2', 'border-danger');
+      domElements.textField.value = '';
+      domElements.errorField.classList.remove('text-danger');
+      domElements.errorField.classList.add('text-success');
+      domElements.errorField.textContent = i18nextInstance.t('feedback.success');
       break;
     case 'error':
-      textField.removeAttribute('readonly');
+      domElements.textField.removeAttribute('readonly');
       document.querySelector('.add').disabled = false;
-      errorField.classList.remove('text-success');
-      errorField.classList.add('text-danger');
-      textField.classList.add('border', 'border-3', 'border-danger');
-      errorField.textContent = errorMessage;
+      domElements.errorField.classList.remove('text-success');
+      domElements.errorField.classList.add('text-danger');
+      domElements.textField.classList.add('border', 'border-3', 'border-danger');
+      domElements.errorField.textContent = errorMessage;
       break;
     default:
   }
 }
 
-// -------------------------------------------------------- Генерация блока фидов и постов
 function createFeedsAndPostsBlock(arg, i18nextInstance) {
-  const feedsBlock = document.querySelector('.feeds');
-  const postsBlock = document.querySelector('.posts');
-  const cardDiv = document.createElement('div');
-  const cardBodyDiv = document.createElement('div');
-  const cardTitleHeader = document.createElement('h2');
-  cardDiv.classList.add('card', 'border-0');
-  cardBodyDiv.classList.add('card-body');
-
-  cardTitleHeader.classList.add('card-title', 'h4');
-
-  cardDiv.append(cardBodyDiv);
-  cardBodyDiv.append(cardTitleHeader);
-
+  const cardBodyDivPosts = document.querySelector('.card-body-posts');
+  const cardBodyDivFeeds = document.querySelector('.card-body-feeds');
   if (arg === 'feeds') {
-    cardTitleHeader.textContent = i18nextInstance.t('feeds.feedsHeader');
-    feedsBlock.append(cardDiv);
-    cardDiv.append(listGroupUlFeeds);
+    const cardTitleHeaderFeeds = document.createElement('h2');
+    cardBodyDivFeeds.append(cardTitleHeaderFeeds);
+    cardTitleHeaderFeeds.classList.add('card-title', 'h4', 'ms-3');
+    cardTitleHeaderFeeds.textContent = i18nextInstance.t('feeds.feedsHeader');
   }
   if (arg === 'posts') {
-    cardTitleHeader.textContent = i18nextInstance.t('posts.postsHeader');
-    postsBlock.append(cardDiv);
-    cardDiv.append(listGroupUlPosts);
+    const cardTitleHeaderPosts = document.createElement('h2');
+    cardBodyDivPosts.append(cardTitleHeaderPosts);
+    cardTitleHeaderPosts.classList.add('card-title', 'h4', 'ms-3');
+    cardTitleHeaderPosts.textContent = i18nextInstance.t('posts.postsHeader');
   }
 }
 
-// -------------------------------------------------------- Добавление фидов
 function addFeeds({ title, description }) {
   const listGroupItemLi = document.createElement('li');
   const titleH3 = document.createElement('h3');
@@ -86,8 +82,7 @@ function addFeeds({ title, description }) {
   listGroupUlFeeds.append(listGroupItemLi);
 }
 
-// -------------------------------------------------------- Добавление постов
-function addPosts(items) {
+function addPosts(items, state) {
   listGroupUlPosts.innerHTML = '';
   items.forEach(({ data, id }) => {
     const itemTitle = data.querySelector('title');
@@ -95,18 +90,19 @@ function addPosts(items) {
     const listGroupItemLi = document.createElement('li');
     const aElem = document.createElement('a');
     const itemButton = document.createElement('button');
-
     listGroupItemLi.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     listGroupItemLi.setAttribute('id', `${id}`);
-    aElem.classList.add('fw-bold');
+    if (state.watchedPosts.includes(id)) {
+      aElem.classList.add('fw-normal');
+    } else {
+      aElem.classList.add('fw-bold');
+    }
     itemButton.classList.add('btn', 'btn-outline-primary', 'btn-sm', 'preview');
-
+    itemButton.setAttribute('data-id', `${id}`);
     itemButton.setAttribute('type', 'button');
-    itemButton.setAttribute('id', `${id}`);
     itemButton.setAttribute('data-bs-toggle', 'modal');
     itemButton.setAttribute('data-bs-target', '#rssModal');
     aElem.setAttribute('href', postUrl.textContent);
-
     itemButton.textContent = 'Просмотр';
     aElem.textContent = itemTitle.textContent;
     listGroupItemLi.append(aElem);
@@ -117,7 +113,7 @@ function addPosts(items) {
 
 const initWatchedState = (i18nextInstance, state) => onChange(state, (path, value) => {
   switch (path) {
-    case 'appStatus':
+    case 'form.state':
       setInputFieldStatus(value, state.errorMessage, i18nextInstance);
       break;
     case 'feedsNumber':
@@ -135,11 +131,20 @@ const initWatchedState = (i18nextInstance, state) => onChange(state, (path, valu
     }
     case 'posts': {
       const { posts } = state;
-      addPosts(posts);
+      addPosts(posts, state);
       break;
     }
     case 'errorMessage':
       setInputFieldStatus('error', state.errorMessage, i18nextInstance);
+      break;
+    case 'openedModalId':
+      // eslint-disable-next-line no-case-declarations
+      const openedPost = document.getElementById(`${state.openedModalId}`);
+      domElements.readAllButton.setAttribute('href', `${openedPost.firstChild.href}`);
+      domElements.modalTitle.textContent = openedPost.firstChild.textContent;
+      domElements.modalDescription.textContent = state.posts[_.findIndex(state.posts, (post) => post.id === state.openedModalId)].data.querySelector('description').textContent;
+      openedPost.firstChild.classList.remove('fw-bold');
+      openedPost.firstChild.classList.add('fw-normal');
       break;
     default:
   }
