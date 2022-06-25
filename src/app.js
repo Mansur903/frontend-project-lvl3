@@ -7,9 +7,7 @@ import initWatchedState from './view.js';
 import ru from './locales/ru.js';
 
 const i18nextInstance = i18next.createInstance();
-
 const proxy = 'https://allorigins.hexlet.app/get?disableCache=true&url=';
-
 const setUrlWithProxy = (url) => new URL(`${proxy}${encodeURIComponent(`${url}`)}`).href;
 
 const checkNewPostTimeout = 5000;
