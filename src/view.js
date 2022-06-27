@@ -26,7 +26,6 @@ function setInputFieldStatus(status, errorMessage, i18nextInstance, dom) {
       domElements.errorField.textContent = i18nextInstance.t('feedback.success');
       break;
     case 'error':
-      console.log('domElements :', domElements);
       domElements.textField.removeAttribute('readonly');
       document.querySelector('.add').disabled = false;
       domElements.errorField.classList.remove('text-success');
@@ -73,7 +72,6 @@ function addFeeds({ title, description }, dom) {
 }
 
 function addPosts(posts, state, dom) {
-  console.log('posts :', posts);
   const domElements = dom;
   domElements.listGroupUlPosts.innerHTML = '';
   posts.forEach(({ data, id }) => {
