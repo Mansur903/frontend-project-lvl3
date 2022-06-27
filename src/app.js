@@ -129,7 +129,7 @@ export default () => {
   yupLocale();
   const i18nextInstance = i18next.createInstance();
   const watchedState = initWatchedState(i18nextInstance, state, domElements);
-  setTimeout(() => fetchNewPosts(watchedState, i18nextInstance), 5000);
+  setTimeout(() => fetchNewPosts(watchedState, i18nextInstance), checkNewPostTimeout);
 
   i18nextInstance.init({
     lng: 'ru',
