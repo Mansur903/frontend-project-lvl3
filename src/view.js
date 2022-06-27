@@ -1,20 +1,8 @@
 import onChange from 'on-change';
 import _ from 'lodash';
 
-const listGroupUlPosts = document.querySelector('.ul-posts');
-const listGroupUlFeeds = document.querySelector('.ul-feeds');
-
-const domElements = {
-  feedsBlock: document.querySelector('.feeds'),
-  postsBlock: document.querySelector('.posts'),
-  errorField: document.querySelector('.feedback'),
-  textField: document.querySelector('.form-control'),
-  readAllButton: document.querySelector('.read-all'),
-  modalTitle: document.querySelector('.modal-title'),
-  modalDescription: document.querySelector('.modal-description'),
-};
-
-function setInputFieldStatus(status, errorMessage, i18nextInstance) {
+function setInputFieldStatus(status, errorMessage, i18nextInstance, dom) {
+  const domElements = dom;
   switch (status) {
     case 'idle':
       domElements.textField.classList.remove('border', 'border-2', 'border-danger');
@@ -38,6 +26,7 @@ function setInputFieldStatus(status, errorMessage, i18nextInstance) {
       domElements.errorField.textContent = i18nextInstance.t('feedback.success');
       break;
     case 'error':
+      console.log('domElements :', domElements);
       domElements.textField.removeAttribute('readonly');
       document.querySelector('.add').disabled = false;
       domElements.errorField.classList.remove('text-success');
@@ -66,7 +55,8 @@ function createFeedsAndPostsBlock(arg, i18nextInstance) {
   }
 }
 
-function addFeeds({ title, description }) {
+function addFeeds({ title, description }, dom) {
+  const domElements = dom;
   const listGroupItemLi = document.createElement('li');
   const titleH3 = document.createElement('h3');
   const descriptionP = document.createElement('p');
@@ -79,12 +69,14 @@ function addFeeds({ title, description }) {
   listGroupItemLi.classList.add('list-group-item', 'border-0', 'border-end-0');
   listGroupItemLi.append(titleH3);
   listGroupItemLi.append(descriptionP);
-  listGroupUlFeeds.append(listGroupItemLi);
+  domElements.listGroupUlFeeds.append(listGroupItemLi);
 }
 
-function addPosts(items, state) {
-  listGroupUlPosts.innerHTML = '';
-  items.forEach(({ data, id }) => {
+function addPosts(posts, state, dom) {
+  console.log('posts :', posts);
+  const domElements = dom;
+  domElements.listGroupUlPosts.innerHTML = '';
+  posts.forEach(({ data, id }) => {
     const itemTitle = data.querySelector('title');
     const postUrl = data.querySelector('link');
     const listGroupItemLi = document.createElement('li');
@@ -107,42 +99,43 @@ function addPosts(items, state) {
     aElem.textContent = itemTitle.textContent;
     listGroupItemLi.append(aElem);
     listGroupItemLi.append(itemButton);
-    listGroupUlPosts.append(listGroupItemLi);
+    domElements.listGroupUlPosts.append(listGroupItemLi);
   });
 }
 
-const initWatchedState = (i18nextInstance, state) => onChange(state, (path, value) => {
+const initWatchedState = (i18nextInstance, state, dom) => onChange(state, (path, value) => {
+  const domElements = dom;
   switch (path) {
     case 'form.state':
-      setInputFieldStatus(value, state.errorMessage, i18nextInstance);
+      setInputFieldStatus(value, state.errorMessage, i18nextInstance, domElements);
       break;
     case 'feedsNumber':
       if (state.feedsNumber === 1) {
-        createFeedsAndPostsBlock('feeds', i18nextInstance);
-        createFeedsAndPostsBlock('posts', i18nextInstance);
+        createFeedsAndPostsBlock('feeds', i18nextInstance, domElements);
+        createFeedsAndPostsBlock('posts', i18nextInstance, domElements);
       }
       break;
     case 'dataTitle': {
       const title = state.dataTitle.textContent;
       const description = state.dataDescription.textContent;
       const feed = { title, description };
-      addFeeds(feed);
+      addFeeds(feed, domElements);
       break;
     }
     case 'posts': {
       const { posts } = state;
-      addPosts(posts, state);
+      addPosts(posts, state, domElements);
       break;
     }
     case 'errorMessage':
-      setInputFieldStatus('error', state.errorMessage, i18nextInstance);
+      setInputFieldStatus('error', state.errorMessage, i18nextInstance, domElements);
       break;
-    case 'openedModalId':
+    case 'modal.postId':
       // eslint-disable-next-line no-case-declarations
-      const openedPost = document.getElementById(`${state.openedModalId}`);
+      const openedPost = document.getElementById(`${state.modal.postId}`);
       domElements.readAllButton.setAttribute('href', `${openedPost.firstChild.href}`);
       domElements.modalTitle.textContent = openedPost.firstChild.textContent;
-      domElements.modalDescription.textContent = state.posts[_.findIndex(state.posts, (post) => post.id === state.openedModalId)].data.querySelector('description').textContent;
+      domElements.modalDescription.textContent = state.posts[_.findIndex(state.posts, (post) => post.id === state.modal.postId)].data.querySelector('description').textContent;
       openedPost.firstChild.classList.remove('fw-bold');
       openedPost.firstChild.classList.add('fw-normal');
       break;

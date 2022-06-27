@@ -1,14 +1,24 @@
 import * as yup from 'yup';
-import { setLocale } from 'yup';
 import _ from 'lodash';
 import axios from 'axios';
 import i18next from 'i18next';
 import initWatchedState from './view.js';
 import ru from './locales/ru.js';
+import parse from './parser.js';
+import yupLocale from './locales/yupLocale.js';
 
-const i18nextInstance = i18next.createInstance();
-const proxy = 'https://allorigins.hexlet.app/get?disableCache=true&url=';
-const setUrlWithProxy = (url) => new URL(`${proxy}${encodeURIComponent(`${url}`)}`).href;
+const proxy = {
+  host: 'https://allorigins.hexlet.app',
+  path: 'get',
+  disableCash: true,
+};
+
+const setUrlWithProxy = (url) => {
+  const urlConstructor = new URL(`${proxy.path}`, `${proxy.host}`);
+  urlConstructor.searchParams.append('disableCache', `${proxy.disableCash}`);
+  urlConstructor.searchParams.append('url', `${url}`);
+  return urlConstructor.href;
+};
 
 const checkNewPostTimeout = 5000;
 
@@ -24,113 +34,102 @@ const state = {
     state: STATUS.idle,
     errorMessage: '',
   },
+  modal: {
+    postId: null,
+  },
   feedsNumber: 0,
   posts: [],
   feeds: [],
-  openedModalId: null,
   watchedPosts: [],
 };
 
-const watchedState = initWatchedState(i18nextInstance, state);
-const form = document.querySelector('form');
-const postsBlock = document.querySelector('.posts');
-
-function parse(stringContainingXMLSource) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(stringContainingXMLSource, 'application/xml');
-  return {
-    posts: Array.from(doc.querySelectorAll('item')),
-    channel: doc.querySelector('channel'),
-  };
-}
-
-function rssDownload(url) {
+function downloadRss(url, stateChanger, i18nextInstance) {
+  const watchedState = stateChanger;
   axios.get(setUrlWithProxy(url))
-    .then((response) => {
-      if (response.status === 200) {
-        return response.data;
-      }
-      throw new Error('Network response was not ok.');
-    })
+    .then((response) => response.data)
     .then((data) => parse(data.contents))
-    .catch(() => {
-      watchedState.form.state = STATUS.error;
-      watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
-    })
-    .then(({ posts, channel }) => {
-      const dataPosts = posts.map((item) => {
-        const newItem = item;
+    .then(({ title, description, posts }) => {
+      const dataPosts = posts.map((post) => {
+        const newItem = post.item;
         return ({
-          data: newItem, id: _.uniqueId(), status: 'unread', url,
+          data: newItem, id: _.uniqueId(), url, pubDate: post.pubDate,
         });
       });
       watchedState.posts = [...dataPosts, ...state.posts];
-      if (channel === null) {
-        throw new Error('Rss not found');
-      }
       const feed = {
-        title: channel.querySelector('title'),
-        description: channel.querySelector('description'),
+        title,
+        description,
         id: _.uniqueId(),
+        url,
       };
-      watchedState.dataDescription = channel.querySelector('description');
-      watchedState.dataTitle = channel.querySelector('title');
+      watchedState.dataDescription = description;
+      watchedState.dataTitle = title;
       watchedState.feeds = [...state.feeds, feed];
       watchedState.feedsNumber += 1;
       watchedState.form.state = STATUS.success;
     })
-    .catch(() => {
+    .catch((e) => {
       watchedState.form.state = STATUS.error;
-      watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
+      switch (e.type) {
+        case 'empty-doc':
+          watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
+          break;
+        default:
+          watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
+      }
     });
 }
 
-function checkNewPosts() {
-  const urls = Array.from(new Set(state.posts.map((item) => item.url)))
-    .filter((item) => item !== undefined);
+function fetchNewPosts(stateChanger, i18nextInstance) {
+  const watchedState = stateChanger;
+  const urls = state.feeds.map((item) => item.url);
   if (urls.length === 0) {
-    setTimeout(checkNewPosts, 5000);
+    setTimeout(() => fetchNewPosts(watchedState, i18nextInstance), 5000);
   } else {
-    urls.forEach((url) => {
-      axios.get(setUrlWithProxy(url))
-        .then((response) => {
-          if (response.status === 200) return response.data;
-          throw new Error('Network response was not ok.');
-        })
-        .catch(() => {
-          watchedState.form.state = STATUS.error;
-          watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
-        })
-        .then((data) => {
-          const { posts } = parse(data.contents);
-          const oldPostsDates = state.posts.map((item) => item.data.querySelector('pubDate').textContent);
-          const newDataPosts = posts.filter((item) => !oldPostsDates.includes(item.querySelector('pubDate').textContent));
-          const newPosts = newDataPosts.map((item) => ({
-            data: item, id: _.uniqueId(), status: 'unread', url,
-          }));
-          watchedState.posts = [...newPosts, ...state.posts];
-        })
-        .catch(() => {
-          watchedState.form.state = STATUS.error;
-          watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
-        })
-        .then(() => {
-          if (url === urls[urls.length - 1]) {
-            setTimeout(checkNewPosts, checkNewPostTimeout);
-          }
-        });
-    });
+    Promise.all(urls.map((url) => axios.get(setUrlWithProxy(url))
+      .then(({ data }) => {
+        const { posts } = parse(data.contents);
+        const oldPostsDates = state.posts.map((post) => post.pubDate);
+        const postsDiff = posts.filter((post) => !oldPostsDates.includes(post.pubDate));
+        const newPosts = postsDiff.map((post) => ({
+          data: post.item, id: _.uniqueId(), url, pubDate: post.pubDate,
+        }));
+        return newPosts;
+      })
+      .catch((e) => {
+        watchedState.form.state = STATUS.error;
+        switch (e.type) {
+          case 'empty-doc':
+            watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
+            break;
+          default:
+            watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
+        }
+      })))
+      .then((newPosts) => {
+        watchedState.posts = [...newPosts[0], ...state.posts];
+        setTimeout(() => fetchNewPosts(watchedState), checkNewPostTimeout);
+      });
   }
 }
 
-checkNewPosts();
-
 export default () => {
-  setLocale({
-    string: {
-      url: 'Ссылка должна быть валидным URL',
-    },
-  });
+  const domElements = {
+    listGroupUlPosts: document.querySelector('.ul-posts'),
+    listGroupUlFeeds: document.querySelector('.ul-feeds'),
+    feedsBlock: document.querySelector('.feeds'),
+    postsBlock: document.querySelector('.posts'),
+    errorField: document.querySelector('.feedback'),
+    textField: document.querySelector('.form-control'),
+    readAllButton: document.querySelector('.read-all'),
+    modalTitle: document.querySelector('.modal-title'),
+    modalDescription: document.querySelector('.modal-description'),
+    form: document.querySelector('form'),
+  };
+  yupLocale();
+  const i18nextInstance = i18next.createInstance();
+  const watchedState = initWatchedState(i18nextInstance, state, domElements);
+  setTimeout(() => fetchNewPosts(watchedState, i18nextInstance), 5000);
 
   i18nextInstance.init({
     lng: 'ru',
@@ -139,37 +138,40 @@ export default () => {
       ru,
     },
   }).then(() => {
-    form.addEventListener('submit', (e) => {
-      const addedUrls = Array.from(new Set(state.posts.map((item) => item.url)))
-        .filter((item) => item !== undefined);
+    domElements.form.addEventListener('submit', (e) => {
       e.preventDefault();
+      const addedUrls = state.feeds.map((item) => item.url);
       watchedState.form.state = STATUS.submitting;
-      const formData = new FormData(form);
+      const formData = new FormData(domElements.form);
       const url = formData.get('url');
-      const schema = yup.string().url().required().notOneOf(addedUrls, 'RSS уже существует');
+      const schema = yup.string().url().required().notOneOf(addedUrls);
       schema.validate(url)
         .then(() => {
-          rssDownload(url);
+          downloadRss(url, watchedState, i18nextInstance);
           formData.set('url', '');
         })
         .catch((err) => {
           watchedState.form.state = STATUS.error;
-          if (err.errors[0] === 'RSS уже существует') {
-            watchedState.errorMessage = i18nextInstance.t('feedback.errorUrlExist');
-          } else {
-            watchedState.errorMessage = i18nextInstance.t(err.errors[0]);
+          switch (err.errors[0]) {
+            case ('rssExists'):
+              watchedState.errorMessage = i18nextInstance.t('feedback.errorUrlExist');
+              break;
+            case ('invalidUrl'):
+              watchedState.errorMessage = i18nextInstance.t('feedback.errorUrlInvalid');
+              break;
+            default:
+              watchedState.errorMessage = i18nextInstance.t(`feedback.${err.errors[0]}`);
           }
         });
     });
 
-    postsBlock.addEventListener('click', (e) => {
-      const clickId = e.path[0].dataset.id;
-      if (clickId !== undefined) {
-        const index = _.findIndex(state.posts, (post) => post.id === clickId);
-        watchedState.openedModalId = clickId;
-        watchedState.posts[index].status = 'read';
-        watchedState.watchedPosts.push(clickId);
+    domElements.postsBlock.addEventListener('click', (e) => {
+      const { id } = e.target.dataset;
+      if (id === undefined) {
+        return;
       }
+      watchedState.modal.postId = id;
+      watchedState.watchedPosts.push(id);
     });
   });
 };
