@@ -130,7 +130,6 @@ const initWatchedState = (i18nextInstance, state, dom) => onChange(state, (path,
       break;
     }
     case 'modal.postId':
-      // eslint-disable-next-line no-case-declarations
       const openedPost = document.getElementById(`${state.modal.postId}`);
       domElements.readAllButton.setAttribute('href', `${openedPost.firstChild.href}`);
       domElements.modalTitle.textContent = openedPost.firstChild.textContent;
