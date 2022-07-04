@@ -2,10 +2,11 @@ import * as yup from 'yup';
 import _ from 'lodash';
 import axios from 'axios';
 import i18next from 'i18next';
-import initWatchedState from './view.js';
-import ru from './locales/ru.js';
-import parse from './parser.js';
-import yupLocale from './locales/yupLocale.js';
+
+import { ru } from './locales';
+import yupLocale from './locales/yupLocale';
+import initWatchedState from './view';
+import parse from './parser';
 
 const proxy = {
   host: 'https://allorigins.hexlet.app',
@@ -14,10 +15,10 @@ const proxy = {
 };
 
 const setUrlWithProxy = (url) => {
-  const urlConstructor = new URL(`${proxy.path}`, `${proxy.host}`);
-  urlConstructor.searchParams.append('disableCache', `${proxy.disableCash}`);
-  urlConstructor.searchParams.append('url', `${url}`);
-  return urlConstructor.href;
+  const urlWithProxy = new URL(`${proxy.path}`, `${proxy.host}`);
+  urlWithProxy.searchParams.append('disableCache', `${proxy.disableCash}`);
+  urlWithProxy.searchParams.append('url', `${url}`);
+  return urlWithProxy.href;
 };
 
 const checkNewPostTimeout = 5000;
@@ -32,86 +33,67 @@ const STATUS = {
 const state = {
   form: {
     state: STATUS.idle,
-    errorMessage: '',
+    errorType: '',
   },
   modal: {
     postId: null,
   },
-  feedsNumber: 0,
   posts: [],
   feeds: [],
-  watchedPosts: [],
+  watchedPosts: new Set(),
 };
 
-function downloadRss(url, stateChanger, i18nextInstance) {
-  const watchedState = stateChanger;
+const downloadRss = (url, watchedState) => {
   axios.get(setUrlWithProxy(url))
-    .then((response) => response.data)
-    .then((data) => parse(data.contents))
-    .then(({ title, description, posts }) => {
+    .then((response) => {
+      const {
+        title, description, posts,
+      } = parse(response.data.contents);
+      const feedId = _.uniqueId();
       const dataPosts = posts.map((post) => {
-        const newItem = post.item;
+        const { postTitle, postDescription, modalLink } = post;
         return ({
-          data: newItem, id: _.uniqueId(), url, pubDate: post.pubDate,
+          postTitle, postDescription, id: _.uniqueId(), feedId, pubDate: post.pubDate, modalLink,
         });
       });
+
       watchedState.posts = [...dataPosts, ...state.posts];
       const feed = {
         title,
         description,
-        id: _.uniqueId(),
+        id: feedId,
         url,
       };
-      watchedState.dataDescription = description;
-      watchedState.dataTitle = title;
+
       watchedState.feeds = [...state.feeds, feed];
-      watchedState.feedsNumber += 1;
       watchedState.form.state = STATUS.success;
     })
     .catch((e) => {
+      const errorType = e.type;
       watchedState.form.state = STATUS.error;
-      switch (e.type) {
-        case 'empty-doc':
-          watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
-          break;
-        default:
-          watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
-      }
+      watchedState.form.errorType = errorType;
     });
-}
+};
 
-function fetchNewPosts(stateChanger, i18nextInstance) {
-  const watchedState = stateChanger;
-  const urls = state.feeds.map((item) => item.url);
-  if (urls.length === 0) {
-    setTimeout(() => fetchNewPosts(watchedState, i18nextInstance), 5000);
-  } else {
-    Promise.all(urls.map((url) => axios.get(setUrlWithProxy(url))
-      .then(({ data }) => {
-        const { posts } = parse(data.contents);
-        const oldPostsDates = state.posts.map((post) => post.pubDate);
-        const postsDiff = posts.filter((post) => !oldPostsDates.includes(post.pubDate));
-        const newPosts = postsDiff.map((post) => ({
-          data: post.item, id: _.uniqueId(), url, pubDate: post.pubDate,
-        }));
-        return newPosts;
-      })
-      .catch((e) => {
-        watchedState.form.state = STATUS.error;
-        switch (e.type) {
-          case 'empty-doc':
-            watchedState.errorMessage = i18nextInstance.t('feedback.errorRssNotFound');
-            break;
-          default:
-            watchedState.errorMessage = i18nextInstance.t('feedback.errorNetwork');
-        }
-      })))
-      .then((newPosts) => {
-        watchedState.posts = [...newPosts[0], ...state.posts];
-        setTimeout(() => fetchNewPosts(watchedState), checkNewPostTimeout);
-      });
-  }
-}
+const fetchNewPosts = (watchedState) => {
+  const promises = state.feeds.map(({ url, id }) => axios.get(setUrlWithProxy(url))
+    .then(({ data }) => {
+      const { posts } = parse(data.contents);
+      posts.forEach((post) => { post.feedId = id; });
+      const oldChannelPosts = state.posts.filter((post) => post.feedId === id);
+      const comparator = (arrVal, othVal) => arrVal.pubDate === othVal.pubDate;
+      const diff = _.differenceWith(posts, oldChannelPosts, comparator);
+      diff.forEach((item) => { item.id = _.uniqueId(); });
+      return diff;
+    })
+    .catch(() => []));
+
+  Promise.all(promises)
+    .then((diff) => {
+      watchedState.posts.unshift(..._.flatten(diff));
+    })
+    .finally(() => setTimeout(() => fetchNewPosts(watchedState), checkNewPostTimeout));
+};
 
 export default () => {
   const domElements = {
@@ -126,10 +108,7 @@ export default () => {
     modalDescription: document.querySelector('.modal-description'),
     form: document.querySelector('form'),
   };
-  yupLocale();
   const i18nextInstance = i18next.createInstance();
-  const watchedState = initWatchedState(i18nextInstance, state, domElements);
-  setTimeout(() => fetchNewPosts(watchedState, i18nextInstance), checkNewPostTimeout);
 
   i18nextInstance.init({
     lng: 'ru',
@@ -138,6 +117,9 @@ export default () => {
       ru,
     },
   }).then(() => {
+    yup.setLocale(yupLocale);
+    const watchedState = initWatchedState(i18nextInstance, state, domElements);
+    setTimeout(() => fetchNewPosts(watchedState, i18nextInstance), checkNewPostTimeout);
     domElements.form.addEventListener('submit', (e) => {
       e.preventDefault();
       const addedUrls = state.feeds.map((item) => item.url);
@@ -147,21 +129,13 @@ export default () => {
       const schema = yup.string().url().required().notOneOf(addedUrls);
       schema.validate(url)
         .then(() => {
-          downloadRss(url, watchedState, i18nextInstance);
+          downloadRss(url, watchedState);
           formData.set('url', '');
         })
         .catch((err) => {
           watchedState.form.state = STATUS.error;
-          switch (err.errors[0]) {
-            case ('rssExists'):
-              watchedState.errorMessage = i18nextInstance.t('feedback.errorUrlExist');
-              break;
-            case ('invalidUrl'):
-              watchedState.errorMessage = i18nextInstance.t('feedback.errorUrlInvalid');
-              break;
-            default:
-              watchedState.errorMessage = i18nextInstance.t(`feedback.${err.errors[0]}`);
-          }
+          const errorType = err.errors[0];
+          watchedState.form.errorType = errorType;
         });
     });
 
@@ -171,7 +145,7 @@ export default () => {
         return;
       }
       watchedState.modal.postId = id;
-      watchedState.watchedPosts.push(id);
+      watchedState.watchedPosts.add(id);
     });
   });
 };

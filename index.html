@@ -2,68 +2,69 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Webpack App</title>
+    <title>RSS aggregator</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
   <body>
-    <div class="modal fade" tabindex="-1" id="rssModal">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Modal title</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <p class="modal-description">Modal body text goes here.</p>
-          </div>
-          <div class="modal-footer">
-            <a type="button" class="btn btn-primary read-all">Читать полностью</a>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <section class="container-fluid bg-dark p-5">
-      <div class="row">
-        <div class="col-md-auto col-lg-8 mx-auto text-white">
-          <h1 class = "display-3">RSS агрегатор</h1>
-          <p class="lead">Начните читать RSS сегодня! Это легко, это красиво.</p>
-          <form class="form-row" action = "">
-            <div class="row">
-              <div class="col">
-                <input id="url-input" name="url" aria-label="url" placeholder="ссылка RSS" autofocus required autocomplete= "off" class = "form-control form-control-lg w-100">
-              </div>
-              <div class="col-auto">
-                <button type = "submit" name="add" role="button" aria-label="add" class="btn btn-lg btn-primary px-sm-5 add">Add</button>
-              </div>
+    <main>
+      <div class="modal fade" tabindex="-1" id="rssModal">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title"></h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-          </form>
-          <p class="text-muted my-1">Пример: https://ru.hexlet.io/lessons.rss</p>
-          <p class="feedback m-0 position-absolute small text-danger"></p>
-        </div>
-      </div>
-    </section>
-    <section class="container-fluid container-xxl p-5">
-      <div class="row">
-        <div class="col-md-10 col-lg-8 order-1 mx-auto posts">
-          <div class="card border-0">
-            <div class="card-body-posts"></div>
-            <ul class="list-group border-0 rounded-0 ul-posts">
-
-            </ul>
-          </div>
-        </div>
-        <div class="col-md-10 col-lg-4 mx-auto order-0 order-lg-1 feeds">
-          <div class="card border-0">
-            <div class="card-body-feeds"></div>
-            <ul class="list-group border-0 rounded-0 ul-feeds">
-              
-            </ul>
+            <div class="modal-body">
+              <p class="modal-description"></p>
+            </div>
+            <div class="modal-footer">
+              <a target="_blank" type="button" class="btn btn-primary read-all">Читать полностью</a>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+            </div>
           </div>
         </div>
       </div>
-    </section>
-    <div class="container-fluid">
-    </div>
+      <section class="container-fluid bg-dark p-5">
+        <div class="row">
+          <div class="col-md-auto col-lg-8 mx-auto text-white">
+            <h1 class="display-3">RSS агрегатор</h1>
+            <p class="lead">Начните читать RSS сегодня! Это легко, это красиво.</p>
+            <form class="form-row" action = "">
+              <div class="row">
+                <div class="col">
+                  <input id="url-input" name="url" aria-label="url" placeholder="ссылка RSS" autofocus autocomplete= "off" class = "form-control form-control-lg w-100">
+                </div>
+                <div class="col-auto">
+                  <button type = "submit" name="add" role="button" aria-label="add" class="btn btn-lg btn-primary px-sm-5 add">Add</button>
+                </div>
+              </div>
+            </form>
+            <p class="text-muted my-1">Пример: https://ru.hexlet.io/lessons.rss</p>
+            <p class="feedback m-0 position-absolute small text-danger"></p>
+          </div>
+        </div>
+      </section>
+      <section class="container-fluid container-xxl p-5">
+        <div class="row">
+          <div class="col-md-10 col-lg-8 order-1 mx-auto posts">
+            <div class="card border-0">
+              <div class="card-body-posts"></div>
+              <ul class="list-group border-0 rounded-0 ul-posts">
+  
+              </ul>
+            </div>
+          </div>
+          <div class="col-md-10 col-lg-4 mx-auto order-0 order-lg-1 feeds">
+            <div class="card border-0">
+              <div class="card-body-feeds"></div>
+              <ul class="list-group border-0 rounded-0 ul-feeds">
+                
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="footer">© 2022. Мансур Хуснутдинов (mansur0510@gmail.com)</footer>
   </body>
 </html>

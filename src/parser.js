@@ -2,8 +2,8 @@ function parse(stringContainingXMLSource) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(stringContainingXMLSource, 'application/xml');
   if (doc.querySelector('parsererror') !== null) {
-    const error = new Error('RSS not found'); // возврат ошибки (выкинуть её, передать тип ошибки)
-    error.type = 'empty-doc';
+    const error = new Error('RSS not found');
+    error.type = 'noRss';
     throw error;
   } else {
     const channel = doc.querySelector('channel');
@@ -11,13 +11,14 @@ function parse(stringContainingXMLSource) {
     const result = {
       title: channel.querySelector('title'),
       description: channel.querySelector('description'),
-      posts: posts.map((item) => {
-        const obj = {
-          item,
+      posts: posts.map((item) => (
+        {
+          postTitle: item.querySelector('title').textContent,
+          postDescription: item.querySelector('description').textContent,
           pubDate: item.querySelector('pubDate').textContent,
-        };
-        return obj;
-      }),
+          modalLink: item.querySelector('link').textContent,
+        }
+      )),
     };
     return result;
   }

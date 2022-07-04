@@ -1,12 +1,11 @@
-import * as yup from 'yup';
-
-const yupLocale = () => yup.setLocale({
+const yupLocale = {
   string: {
     url: 'invalidUrl',
   },
   mixed: {
     notOneOf: 'rssExists',
+    required: 'required',
   },
-});
+};
 
 export default yupLocale;

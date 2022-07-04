@@ -1,20 +1,17 @@
 install:
 	npm install
 
+ci:
+	npm ci
+
 build:
 	npm run dev
 
-webpack-server:
-	npx webpack serve
+start:
+	NODE_ENV=production npx webpack serve
 
 lint:
 	npx eslint .
 
 test: 
 	npm test
-
-test-coverage:
-	npm run test-coverage
-
-test-watch:
-	npx jest --watch

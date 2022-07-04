@@ -1,7 +1,7 @@
 import onChange from 'on-change';
 import _ from 'lodash';
 
-function setInputFieldStatus(status, errorMessage, i18nextInstance, dom) {
+function setInputFieldStatus(status, errorType, i18nextInstance, dom) {
   const domElements = dom;
   switch (status) {
     case 'idle':
@@ -31,7 +31,7 @@ function setInputFieldStatus(status, errorMessage, i18nextInstance, dom) {
       domElements.errorField.classList.remove('text-success');
       domElements.errorField.classList.add('text-danger');
       domElements.textField.classList.add('border', 'border-3', 'border-danger');
-      domElements.errorField.textContent = errorMessage;
+      domElements.errorField.textContent = i18nextInstance.t(`feedback.${errorType}`);
       break;
     default:
   }
@@ -54,35 +54,34 @@ function createFeedsAndPostsBlock(arg, i18nextInstance) {
   }
 }
 
-function addFeeds({ title, description }, dom) {
+function addFeed(feed, dom) {
   const domElements = dom;
+
   const listGroupItemLi = document.createElement('li');
   const titleH3 = document.createElement('h3');
-  const descriptionP = document.createElement('p');
+  const feedDescription = document.createElement('p');
 
-  titleH3.textContent = title;
-  descriptionP.textContent = description;
-
+  titleH3.textContent = feed.title.textContent;
+  feedDescription.textContent = feed.description.textContent;
   titleH3.classList.add('h6', 'm-0');
-  descriptionP.classList.add('m-0', 'text-black-50');
+  feedDescription.classList.add('m-0', 'text-black-50');
   listGroupItemLi.classList.add('list-group-item', 'border-0', 'border-end-0');
   listGroupItemLi.append(titleH3);
-  listGroupItemLi.append(descriptionP);
+  listGroupItemLi.append(feedDescription);
   domElements.listGroupUlFeeds.append(listGroupItemLi);
 }
 
 function addPosts(posts, state, dom) {
   const domElements = dom;
   domElements.listGroupUlPosts.innerHTML = '';
-  posts.forEach(({ data, id }) => {
-    const itemTitle = data.querySelector('title');
-    const postUrl = data.querySelector('link');
+  posts.forEach(({ postTitle, modalLink, id }) => {
     const listGroupItemLi = document.createElement('li');
     const aElem = document.createElement('a');
     const itemButton = document.createElement('button');
-    listGroupItemLi.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
+    listGroupItemLi.classList.add('list-group-item', 'd-flex',
+      'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     listGroupItemLi.setAttribute('id', `${id}`);
-    if (state.watchedPosts.includes(id)) {
+    if (state.watchedPosts.has(id)) {
       aElem.classList.add('fw-normal');
     } else {
       aElem.classList.add('fw-bold');
@@ -92,9 +91,9 @@ function addPosts(posts, state, dom) {
     itemButton.setAttribute('type', 'button');
     itemButton.setAttribute('data-bs-toggle', 'modal');
     itemButton.setAttribute('data-bs-target', '#rssModal');
-    aElem.setAttribute('href', postUrl.textContent);
+    aElem.setAttribute('href', modalLink);
     itemButton.textContent = 'Просмотр';
-    aElem.textContent = itemTitle.textContent;
+    aElem.textContent = postTitle;
     listGroupItemLi.append(aElem);
     listGroupItemLi.append(itemButton);
     domElements.listGroupUlPosts.append(listGroupItemLi);
@@ -105,7 +104,10 @@ const initWatchedState = (i18nextInstance, state, dom) => onChange(state, (path,
   const domElements = dom;
   switch (path) {
     case 'form.state':
-      setInputFieldStatus(value, state.errorMessage, i18nextInstance, domElements);
+      setInputFieldStatus(value, state.form.errorType, i18nextInstance, domElements);
+      break;
+    case 'form.errorType':
+      setInputFieldStatus('error', state.form.errorType, i18nextInstance, domElements);
       break;
     case 'feedsNumber':
       if (state.feedsNumber === 1) {
@@ -113,11 +115,13 @@ const initWatchedState = (i18nextInstance, state, dom) => onChange(state, (path,
         createFeedsAndPostsBlock('posts', i18nextInstance, domElements);
       }
       break;
-    case 'dataTitle': {
-      const title = state.dataTitle.textContent;
-      const description = state.dataDescription.textContent;
-      const feed = { title, description };
-      addFeeds(feed, domElements);
+    case 'feeds': {
+      if (state.feeds.length === 1) {
+        createFeedsAndPostsBlock('feeds', i18nextInstance, domElements);
+        createFeedsAndPostsBlock('posts', i18nextInstance, domElements);
+      }
+      const newFeed = state.feeds[state.feeds.length - 1];
+      addFeed(newFeed, domElements);
       break;
     }
     case 'posts': {
@@ -125,15 +129,14 @@ const initWatchedState = (i18nextInstance, state, dom) => onChange(state, (path,
       addPosts(posts, state, domElements);
       break;
     }
-    case 'errorMessage':
-      setInputFieldStatus('error', state.errorMessage, i18nextInstance, domElements);
-      break;
     case 'modal.postId':
       // eslint-disable-next-line no-case-declarations
       const openedPost = document.getElementById(`${state.modal.postId}`);
       domElements.readAllButton.setAttribute('href', `${openedPost.firstChild.href}`);
       domElements.modalTitle.textContent = openedPost.firstChild.textContent;
-      domElements.modalDescription.textContent = state.posts[_.findIndex(state.posts, (post) => post.id === state.modal.postId)].data.querySelector('description').textContent;
+      domElements.modalDescription.textContent = state
+        .posts[_.findIndex(state.posts, (post) => post.id === state.modal.postId)]
+        .postDescription;
       openedPost.firstChild.classList.remove('fw-bold');
       openedPost.firstChild.classList.add('fw-normal');
       break;
