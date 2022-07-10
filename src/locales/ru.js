@@ -2,6 +2,7 @@ export default {
   translation: {
     posts: {
       postsHeader: 'Посты',
+      postButton: 'Просмотр',
     },
     feeds: {
       feedsHeader: 'Фиды',

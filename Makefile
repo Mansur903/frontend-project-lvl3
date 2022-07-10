@@ -5,10 +5,10 @@ ci:
 	npm ci
 
 build:
-	npm run dev
+	npm run build
 
 start:
-	NODE_ENV=production npx webpack serve
+	NODE_ENV=development npx webpack serve
 
 lint:
 	npx eslint .
