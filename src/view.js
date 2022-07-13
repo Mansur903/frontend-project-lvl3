@@ -3,80 +3,105 @@ import _ from 'lodash';
 
 const initWatchedState = (i18nextInstance, state, domElements) => onChange(state, (path, value) => {
   const handleAddPosts = () => {
+    const { postsBlock } = domElements;
+    const postsCard = postsBlock.querySelector('.card');
+
+    const postsTitleWrapper = document.createElement('div');
+    postsTitleWrapper.classList.add('card-posts-title-wrapper');
+
+    const cardTitleHeaderPosts = document.createElement('h2');
+    cardTitleHeaderPosts.classList.add('card-title', 'h4', 'ms-3');
+    cardTitleHeaderPosts.textContent = i18nextInstance.t('posts.postsHeader');
+
+    postsTitleWrapper.append(cardTitleHeaderPosts);
+
+    const newPostCard = document.createElement('div');
+    newPostCard.classList.add('card', 'border-0');
+
     const { posts } = state;
-    domElements.listGroupUlPosts.innerHTML = '';
+
+    const listGroup = document.createElement('ul');
+    listGroup.classList.add('list-group', 'border-0', 'rounded-0', 'ul-posts');
+
     posts.forEach(({ postTitle, link, id }) => {
-      const listGroupItemLi = document.createElement('li');
-      const aElem = document.createElement('a');
+      const listGroupItem = document.createElement('li');
+      const linkElem = document.createElement('a');
       const itemButton = document.createElement('button');
-      listGroupItemLi.classList.add('list-group-item', 'd-flex',
+      listGroupItem.classList.add('list-group-item', 'd-flex',
         'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-      listGroupItemLi.setAttribute('id', `${id}`);
+      listGroupItem.setAttribute('id', id);
       if (state.watchedPosts.has(id)) {
-        aElem.classList.add('fw-normal');
+        linkElem.classList.add('fw-normal');
       } else {
-        aElem.classList.add('fw-bold');
+        linkElem.classList.add('fw-bold');
       }
       itemButton.classList.add('btn', 'btn-outline-primary', 'btn-sm', 'preview');
-      itemButton.setAttribute('data-id', `${id}`);
+      itemButton.setAttribute('data-id', id);
       itemButton.setAttribute('type', 'button');
       itemButton.setAttribute('data-bs-toggle', 'modal');
       itemButton.setAttribute('data-bs-target', '#rssModal');
-      aElem.setAttribute('href', link);
+      linkElem.setAttribute('href', link);
       itemButton.textContent = i18nextInstance.t('posts.postButton');
-      aElem.textContent = postTitle;
-      listGroupItemLi.append(aElem);
-      listGroupItemLi.append(itemButton);
-      domElements.listGroupUlPosts.append(listGroupItemLi);
+      linkElem.textContent = postTitle;
+      listGroupItem.append(linkElem);
+      listGroupItem.append(itemButton);
+      listGroup.append(listGroupItem);
     });
-  };
-
-  const handleCreateFeedsHeader = () => {
-    if (state.feeds.length === 1) {
-      const cardBodyDivFeeds = document.querySelector('.card-body-feeds');
-      const cardTitleHeaderFeeds = document.createElement('h2');
-      cardBodyDivFeeds.append(cardTitleHeaderFeeds);
-      cardTitleHeaderFeeds.classList.add('card-title', 'h4', 'ms-3');
-      cardTitleHeaderFeeds.textContent = i18nextInstance.t('feeds.feedsHeader');
-    }
-  };
-
-  const handleCreatePostsHeader = () => {
-    if (state.feeds.length === 1) {
-      const cardBodyDivPosts = document.querySelector('.card-body-posts');
-      const cardTitleHeaderPosts = document.createElement('h2');
-      cardBodyDivPosts.append(cardTitleHeaderPosts);
-      cardTitleHeaderPosts.classList.add('card-title', 'h4', 'ms-3');
-      cardTitleHeaderPosts.textContent = i18nextInstance.t('posts.postsHeader');
-    }
+    newPostCard.append(postsTitleWrapper);
+    newPostCard.append(listGroup);
+    postsCard.replaceWith(newPostCard);
   };
 
   const handleAddFeed = () => {
-    handleCreatePostsHeader();
-    handleCreateFeedsHeader();
-    const lastFeed = state.feeds[state.feeds.length - 1];
-    const listGroupItemLi = document.createElement('li');
-    const titleH3 = document.createElement('h3');
-    const feedDescription = document.createElement('p');
-    titleH3.textContent = lastFeed.title.textContent;
-    feedDescription.textContent = lastFeed.description.textContent;
-    titleH3.classList.add('h6', 'm-0');
-    feedDescription.classList.add('m-0', 'text-black-50');
-    listGroupItemLi.classList.add('list-group-item', 'border-0', 'border-end-0');
-    listGroupItemLi.append(titleH3);
-    listGroupItemLi.append(feedDescription);
-    domElements.listGroupUlFeeds.append(listGroupItemLi);
+    const { feedsBlock } = domElements;
+    const feedsCard = feedsBlock.querySelector('.card');
+
+    const feedsTitleWrapper = document.createElement('div');
+    feedsTitleWrapper.classList.add('card-feeds-title-wrapper');
+
+    const cardTitleHeaderFeeds = document.createElement('h2');
+    cardTitleHeaderFeeds.classList.add('card-title', 'h4', 'ms-3');
+    cardTitleHeaderFeeds.textContent = i18nextInstance.t('feeds.feedsHeader');
+    feedsTitleWrapper.append(cardTitleHeaderFeeds);
+    const feedsList = state.feeds;
+    const listGroup = document.createElement('ul');
+    listGroup.classList.add('list-group', 'border-0', 'rounded-0', 'ul-feeds');
+
+    feedsList.forEach((feed) => {
+      const listGroupItem = document.createElement('li');
+      const title = document.createElement('h3');
+      const feedDescription = document.createElement('p');
+      title.textContent = feed.title;
+      feedDescription.textContent = feed.description;
+      title.classList.add('h6', 'm-0');
+      feedDescription.classList.add('m-0', 'text-black-50');
+      listGroupItem.classList.add('list-group-item', 'border-0', 'border-end-0');
+      listGroupItem.append(title);
+      listGroupItem.append(feedDescription);
+      listGroup.append(listGroupItem);
+    });
+
+    const newFeedCard = document.createElement('div');
+    newFeedCard.classList.add('card', 'border-0');
+    newFeedCard.append(feedsTitleWrapper);
+    newFeedCard.append(listGroup);
+    feedsCard.replaceWith(newFeedCard);
   };
 
   const handleModal = () => {
-    const openedPost = document.getElementById(`${state.modal.postId}`);
-    domElements.readAllButton.setAttribute('href', `${openedPost.firstChild.href}`);
-    domElements.modalTitle.textContent = openedPost.firstChild.textContent;
-    domElements.modalDescription.textContent = state
-      .posts[_.findIndex(state.posts, (post) => post.id === state.modal.postId)]
-      .postDescription;
-    openedPost.firstChild.classList.remove('fw-bold');
-    openedPost.firstChild.classList.add('fw-normal');
+    const postModal = document.getElementById(state.modal.postId);
+    const postLinkElement = postModal.firstChild;
+    domElements.readAllButton.setAttribute('href', postLinkElement.href);
+    domElements.modalTitle.textContent = postLinkElement.textContent;
+    const postsList = state.posts;
+    const { postDescription } = _.find(postsList, (post) => post.id === state.modal.postId);
+    domElements.modalDescription.textContent = postDescription;
+  };
+
+  const handleWatchPost = () => {
+    const post = document.getElementById(state.modal.postId);
+    post.firstChild.classList.remove('fw-bold');
+    post.firstChild.classList.add('fw-normal');
   };
 
   const handleForm = () => {
@@ -130,6 +155,9 @@ const initWatchedState = (i18nextInstance, state, domElements) => onChange(state
       handleModal();
       break;
     default:
+    case 'watchedPosts':
+      handleWatchPost();
+      break;
   }
 });
 

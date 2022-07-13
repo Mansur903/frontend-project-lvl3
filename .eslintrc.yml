@@ -11,4 +11,5 @@ rules: {
   import/extensions: "off",
   no-param-reassign: "off",
   no-case-declarations: "off",
+  max-len: "off",
 }

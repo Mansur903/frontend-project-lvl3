@@ -15,9 +15,9 @@ const proxy = {
 };
 
 const setUrlWithProxy = (url) => {
-  const urlWithProxy = new URL(`${proxy.path}`, `${proxy.host}`);
-  urlWithProxy.searchParams.append('disableCache', `${proxy.disableCash}`);
-  urlWithProxy.searchParams.append('url', `${url}`);
+  const urlWithProxy = new URL(proxy.path, proxy.host);
+  urlWithProxy.searchParams.append('disableCache', proxy.disableCash);
+  urlWithProxy.searchParams.append('url', url);
   return urlWithProxy.href;
 };
 
@@ -84,7 +84,7 @@ const downloadRss = (url, watchedState) => {
         url,
       };
 
-      watchedState.feeds.push(feed);
+      watchedState.feeds.unshift(feed);
       watchedState.form = {
         state: STATUS.success,
       };
@@ -106,7 +106,7 @@ const fetchNewPosts = (watchedState) => {
       const comparator = (firstPost, secondPost) => firstPost.pubDate === secondPost.pubDate;
       const diff = _.differenceWith(newPosts, oldChannelPosts, comparator);
       const diffWithId = diff.map((item) => ({ ...item, id: _.uniqueId() }));
-      watchedState.posts.unshift(..._.flatten(diffWithId));
+      watchedState.posts.unshift(...diffWithId);
     })
     .catch((e) => console.log(e)));
 
@@ -116,8 +116,6 @@ const fetchNewPosts = (watchedState) => {
 
 export default () => {
   const domElements = {
-    listGroupUlPosts: document.querySelector('.ul-posts'),
-    listGroupUlFeeds: document.querySelector('.ul-feeds'),
     feedsBlock: document.querySelector('.feeds'),
     postsBlock: document.querySelector('.posts'),
     feedback: document.querySelector('.feedback'),
@@ -153,10 +151,9 @@ export default () => {
           formData.set('url', '');
         })
         .catch((err) => {
-          err.isValidationError = true;
           watchedState.form = {
             state: STATUS.error,
-            errorType: getLoadingProcessErrorType(err),
+            errorType: err.errors[0],
           };
         });
     });
