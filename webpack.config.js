@@ -21,10 +21,6 @@ module.exports = {
     maxEntrypointSize: 1024000,
     maxAssetSize: 1024000,
   },
-  devServer: {
-    host: '0.0.0.0',
-    port: 8080,
-  },
   module: {
     rules: [
       { test: /\.css$/, use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'] },
