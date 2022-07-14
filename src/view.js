@@ -28,8 +28,12 @@ const initWatchedState = (i18nextInstance, state, domElements) => onChange(state
       const linkElem = document.createElement('a');
       const itemButton = document.createElement('button');
       listGroupItem.classList.add(
-        'list-group-item', 'd-flex',
-        'justify-content-between', 'align-items-start', 'border-0', 'border-end-0',
+        'list-group-item',
+        'd-flex',
+        'justify-content-between',
+        'align-items-start',
+        'border-0',
+        'border-end-0',
       );
       listGroupItem.setAttribute('id', id);
       if (state.watchedPosts.has(id)) {
