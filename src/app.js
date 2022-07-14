@@ -142,7 +142,7 @@ export default () => {
     domElements.form.addEventListener('submit', (e) => {
       e.preventDefault();
       const addedUrls = state.feeds.map((item) => item.url);
-      const formData = new FormData(domElements.form);
+      const formData = new FormData(e.target);
       const url = formData.get('url');
       const schema = yup.string().url().required().notOneOf(addedUrls);
       schema.validate(url)
