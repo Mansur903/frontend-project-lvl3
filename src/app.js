@@ -52,10 +52,6 @@ const getLoadingProcessErrorType = (e) => {
     return 'noNetwork';
   }
 
-  if (e.isValidationError) {
-    return e.errors[0];
-  }
-
   return 'unknown';
 };
 
@@ -153,7 +149,7 @@ export default () => {
         .catch((err) => {
           watchedState.form = {
             state: STATUS.error,
-            errorType: err.errors[0],
+            errorType: err.message,
           };
         });
     });
